@@ -46,10 +46,10 @@
     display: flex; flex-direction: column; min-height: 100vh;
     background-color: var(--bg);
     background-image: var(--bg-image, url('./assets/background.jpg'));
-    background-size: cover;
+    background-size: contain;        /* fit within viewport — no zoom / no distortion */
     background-position: center top;
-    background-attachment: fixed;
     background-repeat: no-repeat;
+    /* Note: removed `background-attachment: fixed` — buggy on mobile Safari (causes blur/scale issues) */
   }
   /* Soft overlay sits behind everything else but on top of the bg image */
   body::before {
@@ -916,32 +916,6 @@ const THEMES = {
       '--paper': '#fbf8ff', '--screen': '#f0ecf8', '--bg-soft': '#e2dbf2',
     },
   },
-  light: {
-    name: "basic · light",
-    bg: "none",
-    overlay: "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 100%)",
-    palette: {
-      '--bg': '#f6f6f7',
-      '--magenta': '#3a3a3c', '--magenta-dark': '#1c1c1e', '--magenta-deep': '#000000',
-      '--key': '#ffffff', '--key-edge': '#e0e0e2', '--key-shadow': '#b8b8bc',
-      '--frame': '#d8d8dc', '--frame-dark': '#a8a8ac', '--frame-deep': '#6e6e72',
-      '--ink': '#1c1c1e', '--ink-soft': '#48484a', '--muted': '#8e8e93',
-      '--paper': '#ffffff', '--screen': '#fafafb', '--bg-soft': '#ececef',
-    },
-  },
-  dark: {
-    name: "basic · dark",
-    bg: "none",
-    overlay: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%)",
-    palette: {
-      '--bg': '#0f0f10',
-      '--magenta': '#ff6cba', '--magenta-dark': '#e64a99', '--magenta-deep': '#b03377',
-      '--key': '#2a2a2c', '--key-edge': '#404042', '--key-shadow': '#1a1a1c',
-      '--frame': '#2a2a2c', '--frame-dark': '#1a1a1c', '--frame-deep': '#0a0a0c',
-      '--ink': '#f2f2f7', '--ink-soft': '#c4c4c8', '--muted': '#8e8e93',
-      '--paper': '#1c1c1e', '--screen': '#252527', '--bg-soft': '#1f1f21',
-    },
-  },
   night: {
     name: "night",
     bg: "./assets/night.jpg",
@@ -1036,12 +1010,13 @@ const THEMES = {
 };
 let activeTheme = localStorage.getItem(STORAGE_KEYS.theme) || "kitty";
 if (activeTheme === 'y2k') activeTheme = 'playtime'; // migrate old key
+if (activeTheme === 'light') activeTheme = 'cloud';  // migrate removed light → cloud
+if (activeTheme === 'dark') activeTheme = 'night';   // migrate removed dark → night
 if (!THEMES[activeTheme]) activeTheme = "kitty";
 
 function applyTheme(themeId) {
   const t = THEMES[themeId] || THEMES.kitty;
-  const bgValue = t.bg === 'none' ? 'none' : `url('${t.bg}')`;
-  document.body.style.setProperty('--bg-image', bgValue);
+  document.body.style.setProperty('--bg-image', `url('${t.bg}')`);
   document.body.style.setProperty('--overlay', t.overlay);
   Object.entries(t.palette).forEach(([k, v]) => {
     document.body.style.setProperty(k, v);
