@@ -1003,11 +1003,11 @@ let activeTab = "combos ✿";
 const CATEGORIES = [
   "favorites", "recent", "fonts",
   "combos ✿", "cute", "long decor", "profile",
-  "hearts", "stars", "flowers", "dividers", "arrows",
+  "hearts", "stars", "flowers", "arrows",
   "check", "music", "moon/sky", "shapes", "special"
 ];
 
-const LIST_TABS = new Set(["combos ✿", "cute", "long decor", "profile", "dividers"]);
+const LIST_TABS = new Set(["combos ✿", "cute", "long decor", "profile"]);
 
 function saveRecent() { localStorage.setItem(STORAGE_KEYS.recent, JSON.stringify(recent)); }
 function saveFav() { localStorage.setItem(STORAGE_KEYS.fav, JSON.stringify([...favorites])); }
@@ -1326,7 +1326,25 @@ render();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./emoji-sw.js').catch(() => {});
+    navigator.serviceWorker.register('./emoji-sw.js').then((reg) => {
+      reg.addEventListener('updatefound', () => {
+        const sw = reg.installing;
+        if (!sw) return;
+        sw.addEventListener('statechange', () => {
+          if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+            sw.postMessage('SKIP_WAITING');
+          }
+        });
+      });
+      setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
+    }).catch(() => {});
+
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading) return;
+      reloading = true;
+      window.location.reload();
+    });
   });
 }
 </script>
