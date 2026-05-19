@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#e64a99">
+<title>emoji</title>
+<link rel="manifest" href="./emoji-manifest.json">
+<link rel="apple-touch-icon" href="./assets/app-icon.jpg">
+<link rel="icon" type="image/jpeg" href="./assets/app-icon.jpg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="emoji">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    /* Hello Kitty + Tamagotchi pink palette */
+    --bg: #ffc4dc;            /* main background pink */
+    --bg-soft: #ffd9e8;        /* softer pink wash */
+    --frame: #ff85b5;          /* tamagotchi outer frame */
+    --frame-dark: #e8689a;     /* frame shadow */
+    --frame-deep: #b94170;     /* deep frame edge */
+    --key: #fff5fa;            /* button face, very light pink */
+    --key-edge: #ffafd0;       /* button edge pink */
+    --key-shadow: #e87fab;     /* under-key shadow */
+    --magenta: #e64a99;        /* active hot magenta */
+    --magenta-dark: #b03377;   /* deep magenta */
+    --magenta-deep: #7a1f50;   /* deepest magenta */
+    --ink: #5d2a4a;            /* primary text - dark plum */
+    --ink-soft: #8b4a73;       /* secondary text */
+    --muted: #c789a8;          /* muted pink-gray */
+    --paper: #fff8fc;          /* screen / paper white */
+    --screen: #fef0f7;         /* tamagotchi screen tint */
+    --mint: #b8e6e1;           /* tamagotchi accent dot */
+    --yellow: #fde68a;         /* sparkle accent */
+  }
+  html, body {
+    margin: 0; padding: 0;
+    min-height: 100%;
+    color: var(--ink);
+    font-family: "Apple SD Gothic Neo", "Pretendard", -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Noto Sans KR", "Segoe UI", sans-serif;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex; flex-direction: column; min-height: 100vh;
+    background-color: var(--bg);
+    background-image: var(--bg-image, url('./assets/background.jpg'));
+    background-size: cover;
+    background-position: center top;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+  /* Soft overlay sits behind everything else but on top of the bg image */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background: var(--overlay, linear-gradient(180deg, rgba(255, 196, 220, 0.4) 0%, rgba(255, 175, 208, 0.5) 100%));
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* ===== THEME FAB ===== */
+  .theme-fab {
+    position: fixed;
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    width: 32px; height: 32px;
+    padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--ink);
+    border: 1.5px solid var(--key-edge);
+    border-bottom: 3px solid var(--key-shadow);
+    border-radius: 999px;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 20;
+    transition: transform 0.05s ease, border-bottom-width 0.05s ease, background 0.15s ease;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .theme-fab:active {
+    transform: translateY(2px);
+    border-bottom-width: 1.5px;
+  }
+  .theme-fab.active {
+    background: var(--magenta);
+    border-color: var(--magenta-dark);
+    border-bottom-color: var(--magenta-deep);
+  }
+
+  /* ===== DRAWER : tabs / theme ===== */
+  .drawer-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(93, 42, 74, 0.35);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .drawer-backdrop.show { opacity: 1; }
+  .drawer {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 60;
+    background: linear-gradient(180deg, var(--bg-soft) 0%, var(--bg) 100%);
+    border-bottom: 4px solid var(--frame-deep);
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    padding: 14px 16px 20px;
+    transform: translateY(-110%);
+    transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+    box-shadow: 0 8px 24px rgba(185, 65, 112, 0.25);
+    max-height: 85vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .drawer.show { transform: translateY(0); }
+  .drawer-handle {
+    width: 44px; height: 5px;
+    background: var(--frame);
+    border-radius: 3px;
+    margin: 0 auto 12px;
+  }
+  .drawer-title {
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--ink-soft);
+    text-transform: lowercase;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .tabs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+  }
+  .tab {
+    padding: 10px 12px;
+    background: var(--key);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    cursor: pointer; user-select: none;
+    border: 1.5px solid var(--key-edge);
+    border-bottom: 4px solid var(--key-shadow);
+    border-radius: 14px;
+    white-space: nowrap;
+    text-transform: lowercase;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+  }
+  .tab:active {
+    transform: translateY(2px);
+    border-bottom-width: 2px;
+  }
+  .tab.active {
+    background: var(--magenta);
+    color: white;
+    border-color: var(--magenta-dark);
+    border-bottom-color: var(--magenta-deep);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.18);
+  }
+
+  /* ===== Theme picker ===== */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  .theme-card {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 8px;
+    background: var(--key);
+    border: 1.5px solid var(--key-edge);
+    border-bottom: 4px solid var(--key-shadow);
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 11px;
+    color: var(--ink);
+    text-transform: lowercase;
+    letter-spacing: 0.5px;
+    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+  }
+  .theme-card:active {
+    transform: translateY(2px);
+    border-bottom-width: 2px;
+  }
+  .theme-card.active {
+    background: var(--magenta);
+    color: white;
+    border-color: var(--magenta-dark);
+    border-bottom-color: var(--magenta-deep);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.18);
+  }
+  .theme-thumb {
+    width: 100%;
+    aspect-ratio: 3/4;
+    border-radius: 10px;
+    background-size: cover;
+    background-position: center;
+    border: 1.5px solid rgba(0,0,0,0.05);
+  }
+
+  main { flex: 1; padding: 50px 14px 24px; padding-top: max(50px, env(safe-area-inset-top)); position: relative; z-index: 1; }
+  @media (min-width: 768px) {
+    main { max-width: 760px; margin: 0 auto; }
+  }
+
+  /* ===== GRID buttons : pink keycaps ===== */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
+    gap: 7px;
+  }
+  .sym-btn {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    background: var(--key);
+    border: 1.5px solid var(--key-edge);
+    border-bottom: 4px solid var(--key-shadow);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    position: relative;
+    color: var(--ink);
+    line-height: 1;
+    padding: 4px;
+    overflow: hidden;
+    word-break: break-all;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", "Noto Sans KR", sans-serif;
+  }
+  .sym-btn:active {
+    transform: translateY(3px);
+    border-bottom-width: 1px;
+    background: var(--magenta);
+    color: white;
+    border-color: var(--magenta-dark);
+  }
+  .sym-btn.fav::after {
+    content: "♥"; position: absolute; top: 2px; right: 4px;
+    font-size: 10px; color: var(--magenta);
+  }
+
+  /* ===== COMBO list : pink bar keys ===== */
+  .combo-list {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .combo-btn {
+    padding: 14px 16px;
+    background: var(--key);
+    border: 1.5px solid var(--key-edge);
+    border-bottom: 4px solid var(--key-shadow);
+    border-radius: 16px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    position: relative;
+    color: var(--ink);
+    word-break: break-all;
+    line-height: 1.6;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", "Noto Sans KR", sans-serif;
+  }
+  .combo-btn:active {
+    transform: translateY(3px);
+    border-bottom-width: 1px;
+    background: var(--magenta);
+    color: white;
+    border-color: var(--magenta-dark);
+  }
+  .combo-btn.fav::after {
+    content: "♥"; position: absolute; top: 6px; right: 10px;
+    font-size: 12px; color: var(--magenta);
+  }
+
+  /* ===== FONT converter ===== */
+  .font-input-wrap { margin-bottom: 14px; }
+  #font-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--key-edge);
+    border-bottom: 4px solid var(--key-shadow);
+    border-radius: 16px;
+    outline: none;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  #font-input:focus { border-color: var(--magenta); border-bottom-color: var(--magenta-dark); }
+  #font-input::placeholder { color: var(--muted); font-weight: 500; }
+  .font-row {
+    padding: 14px 16px;
+    background: var(--key);
+    border: 1.5px solid var(--key-edge);
+    border-bottom: 4px solid var(--key-shadow);
+    border-radius: 16px;
+    cursor: pointer;
+    position: relative;
+    color: var(--ink);
+    word-break: break-all;
+    line-height: 1.6;
+    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    width: 100%;
+    text-align: left;
+  }
+  .font-row:active {
+    transform: translateY(3px);
+    border-bottom-width: 1px;
+    background: var(--magenta);
+    color: white;
+    border-color: var(--magenta-dark);
+  }
+  .font-row .label {
+    display: block;
+    font-family: inherit;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: lowercase;
+    letter-spacing: 1.2px;
+    font-weight: 800;
+  }
+  .font-row:active .label { color: rgba(255,255,255,0.85); }
+  .font-row .preview {
+    font-size: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", "Noto Sans KR", sans-serif;
+  }
+  .font-row.fav::after {
+    content: "♥"; position: absolute; top: 6px; right: 10px;
+    font-size: 12px; color: var(--magenta);
+  }
+
+  /* ===== PAD : tamagotchi screen ===== */
+  .pad-wrap {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .pad-screen {
+    padding: 10px;
+    background: linear-gradient(180deg, var(--frame) 0%, var(--frame-dark) 100%);
+    border-radius: 20px;
+    border: 2px solid var(--frame-deep);
+    border-bottom-width: 5px;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.3);
+  }
+  #pad-input {
+    display: block;
+    width: 100%;
+    min-height: 160px;
+    padding: 16px 18px;
+    background: var(--screen);
+    border: 2px solid var(--frame-deep);
+    border-radius: 12px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 28px;
+    color: var(--ink);
+    resize: vertical;
+    outline: none;
+    box-shadow: inset 0 2px 4px rgba(185, 65, 112, 0.15);
+  }
+  #pad-input:focus {
+    border-color: var(--magenta-dark);
+    background: var(--paper);
+  }
+  #pad-input::placeholder { color: var(--muted); font-weight: 500; }
+  .pad-actions {
+    display: flex; gap: 10px;
+    justify-content: center;
+    margin-top: 2px;
+  }
+  .pad-btn {
+    flex: 0 0 auto;
+    padding: 9px 26px;
+    background: var(--key);
+    border: 1.5px solid var(--key-edge);
+    border-bottom: 4px solid var(--key-shadow);
+    border-radius: 12px;       /* rectangular — different from the pill tabs */
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--ink);
+    cursor: pointer;
+    text-transform: uppercase;  /* uppercase makes them feel like distinct action keys */
+    letter-spacing: 1.5px;
+    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+  }
+  .pad-btn:active {
+    transform: translateY(2px);
+    border-bottom-width: 2px;
+  }
+  .pad-btn.primary {
+    background: var(--magenta);
+    color: white;
+    border-color: var(--magenta-dark);
+    border-bottom-color: var(--magenta-deep);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  }
+
+  /* ===== PAD divider (between actions and tabs) ===== */
+  .pad-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 16px 2px 8px;
+  }
+  .pad-divider::before,
+  .pad-divider::after {
+    content: "";
+    flex: 1;
+    height: 0;
+    border-top: 2px dashed var(--key-edge);
+    opacity: 0.7;
+  }
+  .pad-divider span {
+    font-size: 13px;
+    color: var(--magenta);
+    opacity: 0.55;
+    line-height: 1;
+  }
+  .quick-section { margin-top: 6px; }
+  .quick-label {
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--ink-soft);
+    text-transform: lowercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+  .quick-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .quick-chip {
+    padding: 7px 12px;
+    background: var(--key);
+    border: 1.5px solid var(--key-edge);
+    border-bottom: 3px solid var(--key-shadow);
+    border-radius: 999px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--ink);
+    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", "Noto Sans KR", sans-serif;
+    max-width: 100%;
+    word-break: break-all;
+  }
+  .quick-chip:active {
+    transform: translateY(2px);
+    border-bottom-width: 1px;
+    background: var(--magenta);
+    color: white;
+    border-color: var(--magenta-dark);
+  }
+
+  .empty {
+    text-align: center; color: var(--ink-soft); padding: 40px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.7;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+  }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--magenta);
+    color: white;
+    padding: 10px 22px;
+    border: 1.5px solid var(--magenta-dark);
+    border-bottom: 4px solid var(--magenta-deep);
+    border-radius: 999px;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: lowercase;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+    opacity: 0; pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 100;
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .hint {
+    font-size: 10px; color: var(--ink-soft);
+    text-align: center; padding: 4px 0 14px;
+    line-height: 1.6;
+    font-family: inherit;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: lowercase;
+  }
+
+  /* ===== PREVIEW internal tabs (horizontal scroll) ===== */
+  .preview-tabs {
+    display: flex; flex-wrap: nowrap; gap: 6px;
+    padding: 4px 2px 8px;
+    margin: 0 -2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    -webkit-mask-image: linear-gradient(to right, black 0, black calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(to right, black 0, black calc(100% - 28px), transparent 100%);
+  }
+  .preview-tabs.scrolled-end {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 28px, black 100%);
+    mask-image: linear-gradient(to right, transparent 0, black 28px, black 100%);
+  }
+  .preview-tabs.scrolled-mid {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 28px, black calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, black 28px, black calc(100% - 28px), transparent 100%);
+  }
+  .preview-tabs::-webkit-scrollbar { display: none; }
+  .ptab {
+    flex: 0 0 auto;
+    padding: 7px 13px 6px;
+    background: var(--key);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    cursor: pointer; user-select: none;
+    border: 1.5px solid var(--key-edge);
+    border-bottom: 4px solid var(--key-shadow);
+    border-radius: 999px;
+    white-space: nowrap;
+    text-transform: lowercase;
+    scroll-snap-align: start;
+    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+  }
+  .ptab:active {
+    transform: translateY(2px);
+    border-bottom-width: 2px;
+  }
+  .ptab.active {
+    background: var(--magenta);
+    color: white;
+    border-color: var(--magenta-dark);
+    border-bottom-color: var(--magenta-deep);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.18);
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-fab" id="theme-toggle" aria-label="theme picker">🎀</button>
+
+<main id="content"></main>
+
+<div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+
+<aside class="drawer" id="theme-drawer" hidden>
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">theme</div>
+  <div class="theme-grid" id="theme-grid"></div>
+</aside>
+
+<div class="toast" id="toast">copied</div>
+
+<script>
+/* ============================================
+   Single symbol data — displayed as grid
+   ============================================ */
+const SYMBOL_DATA = {
+  "hearts": [
+    {s:"♡", k:"heart"},{s:"♥", k:"heart solid"},{s:"❤", k:"heart red"},
+    {s:"❥", k:"heart tail"},{s:"❣", k:"heart exclamation"},{s:"ღ", k:"heart georgian"},
+    {s:"♥︎", k:"heart"},{s:"❦", k:"heart floral"},
+    {s:"❧", k:"heart leaf"},{s:"෴", k:"heart line"},{s:"💌", k:"love letter"},
+    {s:"୨୧", k:"heart brackets"},{s:"♡‧₊˚", k:"heart sparkle"},{s:"˚୨୧⋆", k:"heart star"},
+  ],
+  "stars": [
+    {s:"✦", k:"star diamond"},{s:"✧", k:"star white"},{s:"⋆", k:"star small"},
+    {s:"✩", k:"star empty"},{s:"★", k:"star black"},{s:"☆", k:"star white"},
+    {s:"⭒", k:"star small white"},{s:"⭑", k:"star small black"},{s:"✯", k:"star"},
+    {s:"✰", k:"star shadow"},{s:"✪", k:"star circle"},{s:"⊹", k:"sparkle cross"},
+    {s:"⟡", k:"diamond white"},{s:"⟢", k:"diamond dot"},{s:"⟣", k:"diamond dot"},
+    {s:"｡", k:"dot small"},{s:"˚", k:"ring above"},{s:"⸝⸝", k:"tear"},
+    {s:"੭", k:"small hand"},{s:"࿐", k:"sanskrit cloud"},{s:"࿔", k:"flow"},
+    {s:"⋆˚", k:"star above"},{s:"｡˚", k:"dot ring"},{s:"⋆ ˚", k:"star fade"},
+    {s:"₊˚", k:"plus small"},{s:"⋆｡˚", k:"star dot ring"},{s:"˖", k:"small cross"},
+    {s:"⁺", k:"plus small"},{s:"⊹", k:"sparkle cross"},
+  ],
+  "flowers": [
+    {s:"✿", k:"flower"},{s:"❀", k:"flower white"},{s:"❁", k:"flower pale"},
+    {s:"❃", k:"flower four"},{s:"❋", k:"flower bold"},{s:"✾", k:"flower"},
+    {s:"⚘", k:"flower stem"},{s:"⚜", k:"lily fleur"},{s:"❇", k:"sparkle star"},
+    {s:"✲", k:"flower round"},{s:"✳", k:"flower 8 point"},{s:"❉", k:"flower white center"},
+    {s:"𓆸", k:"flower egypt"},{s:"𓆹", k:"flower egypt 2"},{s:"𓅮", k:"bird egypt"},
+    {s:"𖧷", k:"flower star"},{s:"🌸", k:"cherry blossom"},
+  ],
+  "dividers": [
+    {s:"⋆｡‧˚ʚ♡ɞ˚‧｡⋆", k:"heart divider"},
+    {s:"⋆ ˚｡⋆୨୧˚", k:"star divider"},
+    {s:"˚ ༘ ೀ⋆｡˚", k:"aesthetic divider"},
+    {s:"⋆ ˚｡⋆୨ ୧ ˚｡ ⋆", k:"bracket divider"},
+    {s:"·˚ ༘ ೀ⋆｡˚", k:"long divider"},
+    {s:"˗ˏˋ ★ ˎˊ˗", k:"star sides"},
+    {s:"╰┈➤", k:"arrow indent"},
+    {s:"━━━━━━━━━━━", k:"thick line"},
+    {s:"─────────", k:"thin line"},
+    {s:"┄┄┄┄┄┄┄", k:"dotted"},
+    {s:"╌╌╌╌╌╌╌", k:"dashed"},
+    {s:"•───────•", k:"dot ends"},
+    {s:"○○○○○○○○", k:"circle line"},
+    {s:"⊱─━━━━━━━━─⊰", k:"petal line"},
+    {s:"⋆ ˚ ｡⋆୨୧˚ ˚୨୧⋆｡ ˚ ⋆", k:"symmetric"},
+    {s:"｡ﾟ•┈୨♡୧┈•ﾟ｡", k:"heart dot line"},
+    {s:"˖°𓇼 𓆉˚ ༘♡ ⋆｡˚ 𓆉𓇼 ⋆", k:"ocean vibes"},
+    {s:"⊹ ࣪ ˖ ── ✦ ── ˖ ࣪ ⊹", k:"sparkle line"},
+    {s:"❀°•°❀°•°❀", k:"flower beads"},
+    {s:"୨୧ ── ୨୧ ── ୨୧", k:"bracket beads"},
+    {s:"───⋆⋅☆⋅⋆───", k:"star center"},
+    {s:"❀⊱─────⊰❀", k:"flower ends"},
+    {s:"✦──•◦◊◦•──✦", k:"diamond center"},
+    {s:"⊰ ⋆ ⋅ ⋆ ⊱", k:"minimal bracket"},
+    {s:"⋆˙⟡˙⋆", k:"crystal mini"},
+    {s:"⊱─━⊱༻♡༺⊰━─⊰", k:"heart royal"},
+    {s:"﹏✦﹏✦﹏✦﹏", k:"wave star"},
+    {s:"┊┊┊┊✧", k:"trail star"},
+    {s:"⊹  ⁺   ‧₊˚ ☁ ⋅", k:"cloud trail"},
+    {s:"⋆｡˚ ⊹ ｡˚⋆", k:"compact star"},
+    {s:"⋆⁺₊⋆ ☾ ⋆⁺₊⋆", k:"moon center"},
+    {s:"·˚ ༘ ೀ⋆｡˚ ⋆ ˚｡ೀ ༘ ˚·", k:"long flora"},
+    {s:"⋆ ｡˚ ⊹ ˙ ﹒ ⊹˚｡ ⋆", k:"airy"},
+    {s:"˚୨୧⋆｡˚ ⋆ ˚｡⋆୨୧˚", k:"bracket mirror"},
+    {s:"✿｡.:* ☆:**:.｡. .｡.:**:☆ *.:｡✿", k:"flower star long"},
+    {s:"⊱ ────── {.⋅ ✯ ⋅.} ────── ⊰", k:"royal star"},
+    {s:"˗ˏˋ ⋆ ˎˊ˗", k:"mini quote"},
+    {s:"⌒⌒⌒⌒⌒⌒⌒", k:"wave"},
+    {s:"⊰♥⊱⊰♥⊱⊰♥⊱", k:"heart repeat"},
+    {s:"·˚ ༘ ⋆｡˚", k:"micro divider"},
+    {s:"☆ ☆ ☆ ☆ ☆ ☆", k:"star row"},
+    {s:"˚｡⋆୨୧˚｡⋆୨୧˚｡⋆", k:"triple bracket"},
+    {s:"𓂃 𓂂 𓂃 𓂂 𓂃", k:"egypt dots"},
+    {s:"⊹ ࣪ ˖ ⊹ ࣪ ˖ ⊹", k:"dust line"},
+    {s:"⋆ ˚｡⋆୨୧˚ ⊹ ˚୨୧⋆｡˚ ⋆", k:"sparkle bracket"},
+  ],
+  "arrows": [
+    {s:"➤", k:"arrow filled"},{s:"➜", k:"arrow bold"},{s:"➔", k:"arrow thin"},
+    {s:"→", k:"arrow right"},{s:"←", k:"arrow left"},{s:"↑", k:"up"},
+    {s:"↓", k:"down"},{s:"↗", k:"up right"},{s:"↘", k:"down right"},
+    {s:"↖", k:"up left"},{s:"↙", k:"down left"},{s:"⇒", k:"double right"},
+    {s:"⇐", k:"double left"},{s:"⇨", k:"bold right"},{s:"➢", k:"arrowhead"},
+    {s:"➣", k:"arrowhead solid"},{s:"➥", k:"curved right"},{s:"↪", k:"hook right"},
+    {s:"↩", k:"hook left"},{s:"⤷", k:"down right"},{s:"⟶", k:"long right"},
+    {s:"⟵", k:"long left"},{s:"⇢", k:"dashed right"},{s:"⇠", k:"dashed left"},
+  ],
+  "check": [
+    {s:"✓", k:"check"},{s:"✔", k:"check bold"},{s:"✗", k:"x cross"},
+    {s:"✘", k:"x bold"},{s:"✕", k:"x thin"},{s:"✖", k:"x heavy"},
+    {s:"❌", k:"x red"},{s:"⭕", k:"circle red"},{s:"☑", k:"checkbox"},
+    {s:"☒", k:"x box"},{s:"⊘", k:"prohibit"},{s:"☐", k:"empty box"},
+  ],
+  "music": [
+    {s:"♪", k:"note"},{s:"♫", k:"note double"},{s:"♬", k:"note beam"},
+    {s:"♩", k:"note quarter"},{s:"♭", k:"flat"},{s:"♮", k:"natural"},
+    {s:"♯", k:"sharp"},{s:"𝄞", k:"treble clef"},{s:"𝄢", k:"bass clef"},
+  ],
+  "moon/sky": [
+    {s:"☾", k:"crescent left"},{s:"☽", k:"crescent right"},{s:"☼", k:"sun"},
+    {s:"☀", k:"sun bold"},{s:"☁", k:"cloud"},{s:"☂", k:"umbrella"},
+    {s:"☃", k:"snowman"},{s:"❄", k:"snowflake"},{s:"❅", k:"snow small"},
+    {s:"❆", k:"snow large"},{s:"☄", k:"comet"},{s:"⋆☾⋆", k:"moon star"},
+    {s:"˚₊·͟͟͟͟͟͟͞➳", k:"flying arrow"},{s:"☆彡", k:"shooting star"},{s:"⋆ ୭ .⋆｡⋆༶⋆˙⊹", k:"galaxy vibes"},
+  ],
+  "shapes": [
+    {s:"○", k:"circle white"},{s:"●", k:"circle black"},{s:"◯", k:"circle large"},
+    {s:"◌", k:"circle dotted"},{s:"◍", k:"circle dotted fill"},{s:"◎", k:"circle double"},
+    {s:"◉", k:"circle center dot"},{s:"⊙", k:"circle dot"},{s:"⊚", k:"circle double"},
+    {s:"◇", k:"diamond white"},{s:"◆", k:"diamond black"},{s:"◈", k:"diamond double"},
+    {s:"□", k:"square white"},{s:"■", k:"square black"},{s:"▢", k:"square round"},
+    {s:"△", k:"triangle white"},{s:"▲", k:"triangle black"},{s:"▽", k:"triangle down white"},
+    {s:"▼", k:"triangle down black"},{s:"◐", k:"half left"},{s:"◑", k:"half right"},
+    {s:"◒", k:"half bottom"},{s:"◓", k:"half top"},
+  ],
+  "special": [
+    {s:"※", k:"reference"},{s:"§", k:"section"},{s:"¶", k:"paragraph"},
+    {s:"†", k:"dagger"},{s:"‡", k:"double dagger"},{s:"⁂", k:"three stars"},
+    {s:"⁕", k:"flower asterisk"},{s:"⁎", k:"asterisk heavy"},{s:"⁑", k:"two asterisks"},
+    {s:"℘", k:"script p"},{s:"∞", k:"infinity"},{s:"≈", k:"approx"},
+    {s:"♔", k:"king"},{s:"♕", k:"queen"},{s:"♚", k:"king black"},
+    {s:"♛", k:"queen black"},{s:"☘", k:"shamrock"},{s:"♣", k:"clover"},
+    {s:"♤", k:"spade white"},{s:"♠", k:"spade"},{s:"♢", k:"diamond white"},
+    {s:"♦", k:"diamond"},
+  ],
+};
+
+/* ============================================
+   Combination data — displayed as list
+   ============================================ */
+const COMBO_DATA = {
+  "combos ✿": [
+    "₊˚⊹♡",
+    "⋆｡‧˚໒꒱⋆｡˚✩",
+    "˚୨୧⋆｡˚",
+    "⋆˚࿔ 𝓷𝓪𝓶𝓮 𝜗𝜚˚⋆",
+    "✿ ˚ ༘♡ ⋆｡˚",
+    "•° ✩.｡.:*•° ✩",
+    "˗ˏˋ ♡ ˎˊ˗",
+    "✧･ﾟ: *✧･ﾟ:* :･ﾟ✧*:･ﾟ✧",
+    "⋆.˚✮🎧✮˚.⋆",
+    "𓍢ִ໋🌷͙֒",
+    "✩‧₊˚",
+    "⋆⭒˚｡⋆",
+    "˚୨୧⋆｡˚⊹",
+    "⊹ ࣪ ﹒",
+    "𓆩♡𓆪",
+    "꒰ঌ ໒꒱",
+    "ᰔᩚ",
+    "𓂃 ࣪˖",
+    "˚ ༘♡ ⋆｡˚",
+    "ʚïɞ",
+    "꒰ᐢ ｡ •̥ ｡ ᐢ꒱₊‧˚",
+    "✩₊˚.⋆☾⋆⁺₊✧",
+    "⋆ ˚｡⋆୨୧˚",
+    "˃ᴗ˂",
+    "・゜・:.｡..｡.:*・゜",
+    "·˚ ༘₊· ͟͟͞͞➳❥",
+    "♡⸝⸝",
+    "⋆ ˚｡⋆୨୧˚ ⊹ ⋆",
+    "✦ ˖ ݁ ˖ ❀ ݁  ݁ ݁ ݁ ݁ ݁ ❀ ݁ ˖ ݁ ˖ ✦",
+    "₊˚ʚ ᗢ₊˚✧ ﾟ.",
+    "✦⋆˚｡⋆",
+    "⋆｡˚ ☁︎ ˚｡⋆",
+    "𓍯 ⊹",
+    "ᡣ𐭩",
+    "𓍢ִ໋🦢⋆",
+    "˚୨୧⋆｡˚⋆",
+    "𓏲࣪",
+  ],
+  "cute": [
+    "꒰ঌ ໒꒱",
+    "(˶ᵔ ᵕ ᵔ˶)",
+    "૮꒰ ˶• ༝ •˶꒱ა ♡",
+    "⸜(｡˃ ᵕ ˂ )⸝♡",
+    "૮ ˙Ⱉ˙ ა",
+    "ʚ(*´꒳`*)ɞ",
+    "(｡˃ ᵕ ˂ )⸝",
+    "꒰ ⑅ᵕ༚ᵕ꒱˖♡",
+    "૮(˶ㅅ˶)ა",
+    "ฅ^•⩊•^ฅ",
+    "( ˶ˆ ᗜ ˆ˵ )",
+    "૮ ˶• ༝ •˶ ა",
+    "(｡•̀ᴗ-)✧",
+    "૮( ˙ ▿ ˙ )ა",
+    "˖⁺‧₊˚♡˚₊‧⁺˖",
+    "(˶˃ ᵕ ˂˶)",
+    "ʚïɞ",
+    "(｡˘•ε•˘｡)",
+    "꒰⸝⸝๑• ᎕ •๑⸝⸝꒱",
+    "૮꒰• ˕ •꒱ა",
+    "(˶ˆᗜˆ˵)",
+    "꒰ ｡>◡<｡ ꒱",
+    "(ฅ´ω`ฅ)",
+    "(˶˃ᆺ˂˶)",
+    "(˶˘ ³˘(❤",
+    "(˶˃⤙˂˶)",
+    "꒰๑˃ ◡˂๑꒱",
+    "૮(˶> ﻌ <˶)ა",
+    "♥*♡+:｡.｡ ｡.｡:+♡*♥",
+    "ᜊ(੭ ˊ ᵕˋ)੭",
+    "☆*:.｡.꒰ঌ(*´꒳`*)໒꒱.｡.:*☆",
+    "✧･ﾟ: *✧･ﾟ:* *:･ﾟ✧*:･ﾟ✧",
+    "ε(*'-')з",
+    "♡ᜊ♡",
+    "ෆꔛ(⑉･ ･⑉)ꔛෆ",
+    "ꉂ☻ᵎᵎᵎ",
+    "☻ັ",
+    "☺︎ັ",
+    "☺︎ིྀ",
+    "*⸌☻ັ⸍*",
+    "𖠌",
+    "⎝⍢⎠",
+    "⎝ᑒ⎠",
+    "⎝⍥⎠",
+    "⎝㋡⎠",
+    "꒰⍢꒱",
+    "꒰⍤꒱",
+    "꒰⍥꒱",
+    "꒰⍨꒱",
+    "ʚϊɞ",
+    "ʚ୧୨ɞ",
+    "ʚ♥ɞ",
+    "˛ε♡з¸",
+    "°ε♡з°",
+    "˚ʚ♡ɞ˚",
+    "꒰⍢꒱ ༘*",
+    "꒰⍥꒱ ༘*",
+  ],
+  "long decor": [
+    "⋆ ˚｡⋆୨୧˚ ୨୧˚｡⋆",
+    "⋆｡°✩ ⋆⭒˚｡⋆ ⋆｡°✩",
+    "✧･ﾟ: *✧･ﾟ:* 　*:･ﾟ✧*:･ﾟ✧",
+    "˚₊· ͟͟͞͞➳❥ ❥ ❥ ❥ ❥",
+    "·˚ ༘ ೀ⋆｡˚ ୨ name ୧ ˚｡⋆ ೀ ༘ ˚·",
+    "⋆ ˚｡⋆୨ Welcome ୧˚｡ ⋆",
+    "♡⸝⸝ ♡⸝⸝ ♡⸝⸝ ♡⸝⸝",
+    "˗ˏˋ ★ name ★ ˎˊ˗",
+    "•─────⋅☾ ☽⋅─────•",
+    "⋆ ˚｡⋆୨୧˚ ɪɴғᴏ ˚୨୧⋆｡˚ ⋆",
+    "₊˚ʚ ᗢ name ᗢ ₊˚",
+    "⊱ ─── ✦ ─── ⊰",
+    "⊱✿⊰─⊱✿⊰─⊱✿⊰",
+    "─━━━━━━⊱✿⊰━━━━━━─",
+    "˚.⋆୨୧˚｡⋆୨୧˚.⋆୨୧˚",
+    "⋆˙⟡♡⟡˙⋆⋆˙⟡♡⟡˙⋆",
+    "𓂃 𓂂 𓂃 𓂂 𓂃 𓂂",
+    "✦°•҉. ✿ ◦ ✿ . ҉•°✦",
+    "₊˚ʚ ᗢ₊˚✧ ﾟ.✧˚ʚ ᗢ ₊˚",
+  ],
+  "profile": [
+    "꒰ঌ name ໒꒱",
+    "˚୨୧⋆｡˚ name ˚｡⋆୨୧˚",
+    "♡⸝⸝ name ⸝⸝♡",
+    "✿ name ✿",
+    "˚ ༘♡ ⋆｡˚ name ˚｡⋆ ♡༘ ˚",
+    "꒰ ⑅ᵕ༚ᵕ꒱˖♡ name",
+    "₊˚⊹♡ name ♡⊹˚₊",
+    "✦ name ✦",
+    "⋆˚࿔ name 𝜗𝜚˚⋆",
+    "❀ name ❀",
+    "໒꒰ྀི ˶• ༝ •˶ ꒱ྀིა name",
+    "𓆩♡𓆪 name 𓆩♡𓆪",
+  ],
+};
+
+/* ============================================
+   Font converter (igfonts.io style)
+   ============================================ */
+const SCRIPT_MAP = {
+  'B':'ℬ','E':'ℰ','F':'ℱ','H':'ℋ','I':'ℐ','L':'ℒ','M':'ℳ','R':'ℛ',
+  'e':'ℯ','g':'ℊ','o':'ℴ'
+};
+const FRAKTUR_MAP = {
+  'C':'ℭ','H':'ℌ','I':'ℑ','R':'ℜ','Z':'ℨ'
+};
+const DOUBLESTRUCK_MAP = {
+  'C':'ℂ','H':'ℍ','N':'ℕ','P':'ℙ','Q':'ℚ','R':'ℝ','Z':'ℤ'
+};
+const ITALIC_MAP = { 'h':'ℎ' };
+
+function offsetConvert(str, upperBase, lowerBase, digitBase, specialMap) {
+  let out = '';
+  for (const ch of str) {
+    const code = ch.codePointAt(0);
+    if (specialMap && specialMap[ch]) { out += specialMap[ch]; continue; }
+    if (code >= 65 && code <= 90 && upperBase != null) {
+      out += String.fromCodePoint(upperBase + (code - 65));
+    } else if (code >= 97 && code <= 122 && lowerBase != null) {
+      out += String.fromCodePoint(lowerBase + (code - 97));
+    } else if (code >= 48 && code <= 57 && digitBase != null) {
+      out += String.fromCodePoint(digitBase + (code - 48));
+    } else {
+      out += ch;
+    }
+  }
+  return out;
+}
+
+const SMALL_CAPS_MAP = {
+  a:'ᴀ',b:'ʙ',c:'ᴄ',d:'ᴅ',e:'ᴇ',f:'ꜰ',g:'ɢ',h:'ʜ',i:'ɪ',j:'ᴊ',k:'ᴋ',l:'ʟ',m:'ᴍ',
+  n:'ɴ',o:'ᴏ',p:'ᴘ',q:'ǫ',r:'ʀ',s:'s',t:'ᴛ',u:'ᴜ',v:'ᴠ',w:'ᴡ',x:'x',y:'ʏ',z:'ᴢ'
+};
+function smallCapsConvert(str) {
+  return str.split('').map(c => {
+    const lower = c.toLowerCase();
+    return SMALL_CAPS_MAP[lower] || c;
+  }).join('');
+}
+
+const FONT_STYLES = [
+  { name: "Bold",            fn: s => offsetConvert(s, 0x1D400, 0x1D41A, 0x1D7CE) },
+  { name: "Italic",          fn: s => offsetConvert(s, 0x1D434, 0x1D44E, null, ITALIC_MAP) },
+  { name: "Bold Italic",     fn: s => offsetConvert(s, 0x1D468, 0x1D482, null) },
+  { name: "Serif Bold",      fn: s => offsetConvert(s, 0x1D400, 0x1D41A, 0x1D7CE) },
+  { name: "Script",          fn: s => offsetConvert(s, 0x1D49C, 0x1D4B6, null, SCRIPT_MAP) },
+  { name: "Bold Script",     fn: s => offsetConvert(s, 0x1D4D0, 0x1D4EA, null) },
+  { name: "Fraktur",         fn: s => offsetConvert(s, 0x1D504, 0x1D51E, null, FRAKTUR_MAP) },
+  { name: "Bold Fraktur",    fn: s => offsetConvert(s, 0x1D56C, 0x1D586, null) },
+  { name: "Double-Struck",   fn: s => offsetConvert(s, 0x1D538, 0x1D552, 0x1D7D8, DOUBLESTRUCK_MAP) },
+  { name: "Sans-Serif",      fn: s => offsetConvert(s, 0x1D5A0, 0x1D5BA, 0x1D7E2) },
+  { name: "Sans Bold",       fn: s => offsetConvert(s, 0x1D5D4, 0x1D5EE, 0x1D7EC) },
+  { name: "Sans Italic",     fn: s => offsetConvert(s, 0x1D608, 0x1D622, null) },
+  { name: "Sans Bold Italic",fn: s => offsetConvert(s, 0x1D63C, 0x1D656, null) },
+  { name: "Monospace",       fn: s => offsetConvert(s, 0x1D670, 0x1D68A, 0x1D7F6) },
+  { name: "Small Caps",      fn: s => smallCapsConvert(s) },
+];
+
+/* ============================================
+   State management
+   ============================================ */
+const STORAGE_KEYS = { recent: "ep_recent_v2", fav: "ep_fav_v2", fontText: "ep_font_text_v1", padText: "ep_pad_text_v1", theme: "ep_theme_v1" };
+
+/* ============================================
+   Themes — bg image + overlay + matching palette
+   ============================================ */
+const THEMES = {
+  kitty: {
+    name: "kitty room",
+    bg: "./assets/background.jpg",
+    overlay: "linear-gradient(180deg, rgba(255,196,220,0.4) 0%, rgba(255,175,208,0.5) 100%)",
+    palette: {
+      '--magenta': '#e64a99', '--magenta-dark': '#b03377', '--magenta-deep': '#7a1f50',
+      '--key': '#fff5fa', '--key-edge': '#ffafd0', '--key-shadow': '#e87fab',
+      '--frame': '#ff85b5', '--frame-dark': '#e8689a', '--frame-deep': '#b94170',
+      '--ink': '#5d2a4a', '--ink-soft': '#8b4a73', '--muted': '#c789a8',
+      '--paper': '#fff8fc', '--screen': '#fef0f7', '--bg-soft': '#ffd9e8',
+    },
+  },
+  search: {
+    name: "search",
+    bg: "./assets/concept1.jpg",
+    overlay: "linear-gradient(180deg, rgba(255,210,220,0.3) 0%, rgba(255,195,210,0.45) 100%)",
+    palette: {
+      '--magenta': '#e98da3', '--magenta-dark': '#c46d83', '--magenta-deep': '#8b4658',
+      '--key': '#fff8f8', '--key-edge': '#f3c8d2', '--key-shadow': '#d8a0ad',
+      '--frame': '#f3a3b5', '--frame-dark': '#d4849a', '--frame-deep': '#8a5d6c',
+      '--ink': '#5a3a44', '--ink-soft': '#8b6c75', '--muted': '#c4a3ac',
+      '--paper': '#fffafa', '--screen': '#fef5f6', '--bg-soft': '#fde6ec',
+    },
+  },
+  y2k: {
+    name: "y2k playtime",
+    bg: "./assets/concept2.jpg",
+    overlay: "linear-gradient(180deg, rgba(220,215,245,0.4) 0%, rgba(235,200,225,0.5) 100%)",
+    palette: {
+      '--magenta': '#a187d9', '--magenta-dark': '#7e62b8', '--magenta-deep': '#523980',
+      '--key': '#f9f4ff', '--key-edge': '#d0bce8', '--key-shadow': '#a78ec6',
+      '--frame': '#b8a3dc', '--frame-dark': '#967ebd', '--frame-deep': '#5b4682',
+      '--ink': '#3d2860', '--ink-soft': '#6a548c', '--muted': '#a292c0',
+      '--paper': '#fbf8ff', '--screen': '#f0ecf8', '--bg-soft': '#e2dbf2',
+    },
+  },
+  milkshake: {
+    name: "milkshake",
+    bg: "./assets/concept3.jpg",
+    overlay: "linear-gradient(180deg, rgba(255,225,210,0.35) 0%, rgba(255,210,220,0.45) 100%)",
+    palette: {
+      '--magenta': '#d49b8a', '--magenta-dark': '#b07666', '--magenta-deep': '#7a4d3e',
+      '--key': '#fff8f1', '--key-edge': '#f0cdb8', '--key-shadow': '#c8a48d',
+      '--frame': '#f3b59f', '--frame-dark': '#d49080', '--frame-deep': '#7e5141',
+      '--ink': '#5a3e2e', '--ink-soft': '#8a6f5e', '--muted': '#c3a999',
+      '--paper': '#fffaf3', '--screen': '#fef3ea', '--bg-soft': '#fadccb',
+    },
+  },
+  win: {
+    name: "you win!",
+    bg: "./assets/concept4.gif",
+    overlay: "linear-gradient(180deg, rgba(225,210,235,0.45) 0%, rgba(230,195,210,0.55) 100%)",
+    palette: {
+      '--magenta': '#b289ae', '--magenta-dark': '#8d6889', '--magenta-deep': '#583c55',
+      '--key': '#faf4f7', '--key-edge': '#dbc4d4', '--key-shadow': '#b395ad',
+      '--frame': '#c4a5be', '--frame-dark': '#a283a0', '--frame-deep': '#624863',
+      '--ink': '#4a3548', '--ink-soft': '#7a5d76', '--muted': '#b29bae',
+      '--paper': '#fbf6f9', '--screen': '#f3ecf1', '--bg-soft': '#dfcad6',
+    },
+  },
+};
+let activeTheme = localStorage.getItem(STORAGE_KEYS.theme) || "kitty";
+if (!THEMES[activeTheme]) activeTheme = "kitty";
+
+function applyTheme(themeId) {
+  const t = THEMES[themeId] || THEMES.kitty;
+  document.body.style.setProperty('--bg-image', `url('${t.bg}')`);
+  document.body.style.setProperty('--overlay', t.overlay);
+  Object.entries(t.palette).forEach(([k, v]) => {
+    document.body.style.setProperty(k, v);
+  });
+  activeTheme = themeId;
+  localStorage.setItem(STORAGE_KEYS.theme, themeId);
+}
+const recent = JSON.parse(localStorage.getItem(STORAGE_KEYS.recent) || "[]");
+const favorites = new Set(JSON.parse(localStorage.getItem(STORAGE_KEYS.fav) || "[]"));
+let activeTab = "combos ✿";
+
+const CATEGORIES = [
+  "favorites", "recent", "fonts",
+  "combos ✿", "cute", "long decor", "profile",
+  "hearts", "stars", "flowers", "dividers", "arrows",
+  "check", "music", "moon/sky", "shapes", "special"
+];
+
+const LIST_TABS = new Set(["combos ✿", "cute", "long decor", "profile", "dividers"]);
+
+function saveRecent() { localStorage.setItem(STORAGE_KEYS.recent, JSON.stringify(recent)); }
+function saveFav() { localStorage.setItem(STORAGE_KEYS.fav, JSON.stringify([...favorites])); }
+
+function addToRecent(item) {
+  const idx = recent.indexOf(item);
+  if (idx !== -1) recent.splice(idx, 1);
+  recent.unshift(item);
+  if (recent.length > 50) recent.pop();
+  saveRecent();
+}
+
+function toggleFav(item) {
+  if (favorites.has(item)) favorites.delete(item);
+  else favorites.add(item);
+  saveFav();
+}
+
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(`✓ copied`);
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast(`✓ copied`);
+  }
+}
+
+let toastTimer;
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 1200);
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+/* ============================================
+   Theme drawer
+   ============================================ */
+function renderThemes() {
+  const gridEl = document.getElementById('theme-grid');
+  gridEl.innerHTML = Object.entries(THEMES).map(([id, t]) =>
+    `<button class="theme-card ${id === activeTheme ? 'active' : ''}" data-theme="${escapeAttr(id)}">
+      <div class="theme-thumb" style="background-image: url('${t.bg}')"></div>
+      <span>${escapeHtml(t.name)}</span>
+    </button>`
+  ).join('');
+  gridEl.querySelectorAll('.theme-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      applyTheme(btn.dataset.theme);
+      renderThemes();
+      closeDrawer();
+    });
+  });
+}
+
+let openedDrawer = null;
+let closeTimer = null;
+function openDrawer(which) {
+  if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+  const backdrop = document.getElementById('drawer-backdrop');
+  const themeD = document.getElementById('theme-drawer');
+  openedDrawer = which;
+  backdrop.hidden = false;
+  themeD.hidden = false;
+  void backdrop.offsetWidth; void themeD.offsetWidth;
+  backdrop.classList.add('show');
+  themeD.classList.add('show');
+  document.getElementById('theme-toggle').classList.add('active');
+  renderThemes();
+}
+function closeDrawer() {
+  if (!openedDrawer) return;
+  if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+  const backdrop = document.getElementById('drawer-backdrop');
+  const themeD = document.getElementById('theme-drawer');
+  backdrop.classList.remove('show');
+  themeD.classList.remove('show');
+  document.getElementById('theme-toggle').classList.remove('active');
+  openedDrawer = null;
+  closeTimer = setTimeout(() => {
+    backdrop.hidden = true;
+    themeD.hidden = true;
+    closeTimer = null;
+  }, 250);
+}
+
+/* ============================================
+   Picker rendering (within preview)
+   ============================================ */
+function renderSymGrid(items) {
+  if (!items.length) return emptyMsg();
+  return `<div class="grid">${items.map(it => {
+    const val = typeof it === 'string' ? it : it.s;
+    const k = typeof it === 'string' ? '' : (it.k || '');
+    const isFav = favorites.has(val);
+    return `<button class="sym-btn ${isFav ? 'fav' : ''}" data-text="${escapeAttr(val)}" title="${escapeAttr(k)}">${escapeHtml(val)}</button>`;
+  }).join('')}</div>`;
+}
+
+function renderComboList(items) {
+  if (!items.length) return emptyMsg();
+  return `<div class="combo-list">${items.map(s => {
+    const val = typeof s === 'string' ? s : s.s;
+    const isFav = favorites.has(val);
+    return `<button class="combo-btn ${isFav ? 'fav' : ''}" data-text="${escapeAttr(val)}">${escapeHtml(val)}</button>`;
+  }).join('')}</div>`;
+}
+
+function renderFontRows() {
+  const input = (localStorage.getItem(STORAGE_KEYS.padText) || '').trim() || 'your text';
+  const rows = FONT_STYLES.map(style => {
+    const converted = style.fn(input);
+    return `<button class="font-row" data-font="${escapeAttr(converted)}" data-label="${escapeAttr(style.name)}">
+      <span class="label">${escapeHtml(style.name)}</span>
+      <span class="preview">${escapeHtml(converted)}</span>
+    </button>`;
+  }).join('');
+  return `<div class="combo-list">${rows}</div>`;
+}
+
+function emptyMsg() {
+  if (activeTab === "recent") return `<div class="empty">no recent items yet<br>tap symbols below to fill ✧</div>`;
+  if (activeTab === "favorites") return `<div class="empty">no favorites yet<br>long-press a symbol to save ♥</div>`;
+  return `<div class="empty">no items</div>`;
+}
+
+function renderPicker() {
+  if (activeTab === 'fonts') return renderFontRows();
+  if (activeTab === 'recent') {
+    return recent.length ? renderComboList(recent.slice(0, 100)) : emptyMsg();
+  }
+  if (activeTab === 'favorites') {
+    const list = [...favorites];
+    return list.length ? renderComboList(list) : emptyMsg();
+  }
+  if (LIST_TABS.has(activeTab)) {
+    return renderComboList(COMBO_DATA[activeTab] || []);
+  }
+  return renderSymGrid(SYMBOL_DATA[activeTab] || []);
+}
+
+/* ============================================
+   Preview screen — the one and only
+   ============================================ */
+function renderPreview() {
+  const savedText = localStorage.getItem(STORAGE_KEYS.padText) || '';
+  const tabsHtml = CATEGORIES.map(cat =>
+    `<button class="ptab ${cat === activeTab ? 'active' : ''}" data-tab="${escapeAttr(cat)}">${cat}</button>`
+  ).join('');
+  return `
+    <div class="preview-wrap">
+      <div class="pad-screen">
+        <textarea id="pad-input" placeholder="♥  type or tap below to compose  ♥">${escapeHtml(savedText)}</textarea>
+      </div>
+      <div class="pad-actions">
+        <button class="pad-btn primary" id="pad-copy">♥ copy</button>
+        <button class="pad-btn" id="pad-clear">✕ clear</button>
+      </div>
+      <div class="pad-divider"><span>♡</span></div>
+      <div class="quick-section">
+        <div class="preview-tabs" id="preview-tabs">${tabsHtml}</div>
+        <div class="quick-picker" id="quick-picker">${renderPicker()}</div>
+      </div>
+    </div>
+  `;
+}
+
+function render() {
+  document.getElementById('content').innerHTML = renderPreview();
+  attachPreviewHandlers();
+}
+
+function refreshPicker() {
+  const picker = document.getElementById('quick-picker');
+  if (!picker) return;
+  picker.innerHTML = renderPicker();
+  attachPickerHandlers();
+}
+
+function insertIntoPad(text) {
+  const ta = document.getElementById('pad-input');
+  if (!ta) return;
+  const start = ta.selectionStart ?? ta.value.length;
+  const end = ta.selectionEnd ?? ta.value.length;
+  ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + text.length;
+  ta.focus();
+  localStorage.setItem(STORAGE_KEYS.padText, ta.value);
+}
+
+function attachPreviewHandlers() {
+  const ta = document.getElementById('pad-input');
+  const copyBtn = document.getElementById('pad-copy');
+  const clearBtn = document.getElementById('pad-clear');
+
+  ta.addEventListener('input', () => {
+    localStorage.setItem(STORAGE_KEYS.padText, ta.value);
+    if (activeTab === 'fonts') refreshPicker();
+  });
+
+  copyBtn.addEventListener('click', () => {
+    if (!ta.value) { showToast('nothing to copy'); return; }
+    copyToClipboard(ta.value);
+  });
+
+  clearBtn.addEventListener('click', () => {
+    ta.value = '';
+    localStorage.removeItem(STORAGE_KEYS.padText);
+    ta.focus();
+    if (activeTab === 'fonts') refreshPicker();
+  });
+
+  const tabsEl = document.getElementById('preview-tabs');
+  document.querySelectorAll('#preview-tabs .ptab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeTab = btn.dataset.tab;
+      document.querySelectorAll('#preview-tabs .ptab').forEach(b => b.classList.toggle('active', b === btn));
+      refreshPicker();
+      // Scroll active tab into view
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    });
+  });
+
+  // Desktop: vertical wheel → horizontal scroll on the tab strip
+  tabsEl.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      tabsEl.scrollLeft += e.deltaY;
+    }
+  }, { passive: false });
+
+  const updateScrollEdges = () => {
+    const max = tabsEl.scrollWidth - tabsEl.clientWidth;
+    const left = tabsEl.scrollLeft;
+    tabsEl.classList.toggle('scrolled-end', left >= max - 2);
+    tabsEl.classList.toggle('scrolled-mid', left > 2 && left < max - 2);
+  };
+  tabsEl.addEventListener('scroll', updateScrollEdges);
+  updateScrollEdges();
+  // Auto-scroll the active tab into view on first render
+  const activeBtn = tabsEl.querySelector('.ptab.active');
+  if (activeBtn) activeBtn.scrollIntoView({ inline: 'center', block: 'nearest' });
+
+  attachPickerHandlers();
+}
+
+function attachPickerHandlers() {
+  // Font rows: tap = replace textarea content with styled version
+  document.querySelectorAll('#quick-picker .font-row').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const text = btn.dataset.font;
+      const ta = document.getElementById('pad-input');
+      ta.value = text;
+      localStorage.setItem(STORAGE_KEYS.padText, text);
+      showToast(`${btn.dataset.label} applied`);
+    });
+  });
+
+  // Symbol / combo / chip buttons: tap = insert, long-press = favorite
+  document.querySelectorAll('#quick-picker .sym-btn, #quick-picker .combo-btn').forEach(btn => {
+    let pressTimer;
+    let longPressed = false;
+
+    btn.addEventListener('click', () => {
+      if (longPressed) { longPressed = false; return; }
+      const text = btn.dataset.text;
+      addToRecent(text);
+      insertIntoPad(text);
+    });
+
+    btn.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      toggleFav(btn.dataset.text);
+      refreshPicker();
+    });
+
+    const startPress = () => {
+      pressTimer = setTimeout(() => {
+        longPressed = true;
+        toggleFav(btn.dataset.text);
+        if (navigator.vibrate) navigator.vibrate(50);
+        refreshPicker();
+      }, 500);
+    };
+    const cancelPress = () => clearTimeout(pressTimer);
+    btn.addEventListener('touchstart', startPress, { passive: true });
+    btn.addEventListener('touchend', cancelPress);
+    btn.addEventListener('touchmove', cancelPress);
+    btn.addEventListener('mousedown', startPress);
+    btn.addEventListener('mouseup', cancelPress);
+    btn.addEventListener('mouseleave', cancelPress);
+  });
+}
+
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  if (openedDrawer === 'theme') closeDrawer();
+  else openDrawer('theme');
+});
+document.getElementById('drawer-backdrop').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && openedDrawer) closeDrawer();
+});
+
+applyTheme(activeTheme);
+render();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./emoji-sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

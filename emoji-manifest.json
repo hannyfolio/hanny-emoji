@@ -1,0 +1,33 @@
+{
+  "name": "emoji",
+  "short_name": "emoji",
+  "description": "Cute aesthetic emoji & symbol picker",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffc4dc",
+  "theme_color": "#e64a99",
+  "icons": [
+    {
+      "src": "assets/app-icon.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/app-icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/app-icon.jpg",
+      "sizes": "736x736",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["entertainment", "lifestyle"],
+  "lang": "en"
+}
