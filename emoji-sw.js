@@ -11,6 +11,13 @@ const ASSETS = [
   './assets/concept2.jpg',
   './assets/concept3.jpg',
   './assets/concept4.gif',
+  './assets/night.jpg',
+  './assets/pink.jpg',
+  './assets/wave.jpg',
+  './assets/soft.jpg',
+  './assets/cloud.jpg',
+  './assets/sunset.jpg',
+  './assets/bubble.jpg',
 ];
 
 self.addEventListener('install', (e) => {
