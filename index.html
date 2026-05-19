@@ -892,8 +892,20 @@ const THEMES = {
       '--paper': '#fff8fc', '--screen': '#fef0f7', '--bg-soft': '#ffd9e8',
     },
   },
-  y2k: {
-    name: "y2k playtime",
+  milkshake: {
+    name: "milkshake",
+    bg: "./assets/concept3.jpg",
+    overlay: "linear-gradient(180deg, rgba(255,225,210,0.35) 0%, rgba(255,210,220,0.45) 100%)",
+    palette: {
+      '--magenta': '#d49b8a', '--magenta-dark': '#b07666', '--magenta-deep': '#7a4d3e',
+      '--key': '#fff8f1', '--key-edge': '#f0cdb8', '--key-shadow': '#c8a48d',
+      '--frame': '#f3b59f', '--frame-dark': '#d49080', '--frame-deep': '#7e5141',
+      '--ink': '#5a3e2e', '--ink-soft': '#8a6f5e', '--muted': '#c3a999',
+      '--paper': '#fffaf3', '--screen': '#fef3ea', '--bg-soft': '#fadccb',
+    },
+  },
+  playtime: {
+    name: "playtime",
     bg: "./assets/concept2.jpg",
     overlay: "linear-gradient(180deg, rgba(220,215,245,0.4) 0%, rgba(235,200,225,0.5) 100%)",
     palette: {
@@ -904,25 +916,41 @@ const THEMES = {
       '--paper': '#fbf8ff', '--screen': '#f0ecf8', '--bg-soft': '#e2dbf2',
     },
   },
-  win: {
-    name: "you win!",
-    bg: "./assets/concept4.gif",
-    overlay: "linear-gradient(180deg, rgba(225,210,235,0.45) 0%, rgba(230,195,210,0.55) 100%)",
+  light: {
+    name: "basic · light",
+    bg: "none",
+    overlay: "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 100%)",
     palette: {
-      '--magenta': '#b289ae', '--magenta-dark': '#8d6889', '--magenta-deep': '#583c55',
-      '--key': '#faf4f7', '--key-edge': '#dbc4d4', '--key-shadow': '#b395ad',
-      '--frame': '#c4a5be', '--frame-dark': '#a283a0', '--frame-deep': '#624863',
-      '--ink': '#4a3548', '--ink-soft': '#7a5d76', '--muted': '#b29bae',
-      '--paper': '#fbf6f9', '--screen': '#f3ecf1', '--bg-soft': '#dfcad6',
+      '--bg': '#f6f6f7',
+      '--magenta': '#3a3a3c', '--magenta-dark': '#1c1c1e', '--magenta-deep': '#000000',
+      '--key': '#ffffff', '--key-edge': '#e0e0e2', '--key-shadow': '#b8b8bc',
+      '--frame': '#d8d8dc', '--frame-dark': '#a8a8ac', '--frame-deep': '#6e6e72',
+      '--ink': '#1c1c1e', '--ink-soft': '#48484a', '--muted': '#8e8e93',
+      '--paper': '#ffffff', '--screen': '#fafafb', '--bg-soft': '#ececef',
+    },
+  },
+  dark: {
+    name: "basic · dark",
+    bg: "none",
+    overlay: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%)",
+    palette: {
+      '--bg': '#0f0f10',
+      '--magenta': '#e8e8ea', '--magenta-dark': '#c4c4c6', '--magenta-deep': '#9e9ea0',
+      '--key': '#2a2a2c', '--key-edge': '#404042', '--key-shadow': '#1a1a1c',
+      '--frame': '#2a2a2c', '--frame-dark': '#1a1a1c', '--frame-deep': '#0a0a0c',
+      '--ink': '#f2f2f7', '--ink-soft': '#c4c4c8', '--muted': '#8e8e93',
+      '--paper': '#1c1c1e', '--screen': '#252527', '--bg-soft': '#1f1f21',
     },
   },
 };
 let activeTheme = localStorage.getItem(STORAGE_KEYS.theme) || "kitty";
+if (activeTheme === 'y2k') activeTheme = 'playtime'; // migrate old key
 if (!THEMES[activeTheme]) activeTheme = "kitty";
 
 function applyTheme(themeId) {
   const t = THEMES[themeId] || THEMES.kitty;
-  document.body.style.setProperty('--bg-image', `url('${t.bg}')`);
+  const bgValue = t.bg === 'none' ? 'none' : `url('${t.bg}')`;
+  document.body.style.setProperty('--bg-image', bgValue);
   document.body.style.setProperty('--overlay', t.overlay);
   Object.entries(t.palette).forEach(([k, v]) => {
     document.body.style.setProperty(k, v);
