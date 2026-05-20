@@ -45,14 +45,20 @@
   body {
     display: flex; flex-direction: column; min-height: 100vh;
     background-color: var(--bg);
-    background-image: var(--bg-image, url('./assets/background.jpg'));
-    background-size: contain;        /* fit within viewport — no zoom / no distortion */
-    background-position: center top;
-    background-repeat: no-repeat;
-    /* Note: removed `background-attachment: fixed` — buggy on mobile Safari (causes blur/scale issues) */
   }
-  /* Soft overlay sits behind everything else but on top of the bg image */
+  /* Fixed bg layer — fills viewport on cover, scroll-stable on mobile Safari */
   body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: var(--bg-image, url('./assets/background.jpg'));
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: -2;
+  }
+  /* Soft overlay sits between bg image and content */
+  body::after {
     content: "";
     position: fixed; inset: 0;
     background: var(--overlay, linear-gradient(180deg, rgba(255, 196, 220, 0.4) 0%, rgba(255, 175, 208, 0.5) 100%));
@@ -628,7 +634,9 @@ const SYMBOL_DATA = {
     {s:"♡", k:"heart"},{s:"♥", k:"heart solid"},{s:"❤", k:"heart red"},
     {s:"❥", k:"heart tail"},{s:"❣", k:"heart exclamation"},{s:"ღ", k:"heart georgian"},
     {s:"♥︎", k:"heart"},{s:"❦", k:"heart floral"},
-    {s:"❧", k:"heart leaf"},{s:"෴", k:"heart line"},{s:"💌", k:"love letter"},
+    {s:"❧", k:"heart leaf"},{s:"෴", k:"heart line"},
+    {s:"დ", k:"heart georgian d"},{s:"۵", k:"heart arabic"},{s:"ও", k:"heart bengali"},
+    {s:"ෆ", k:"heart sinhala"},{s:"ዔ", k:"heart ethiopic"},
     {s:"୨୧", k:"heart brackets"},{s:"♡‧₊˚", k:"heart sparkle"},{s:"˚୨୧⋆", k:"heart star"},
     {s:"︠♡", k:"heart subtle"},{s:"˚ෆ*", k:"heart sparkle 2"},{s:"₊ 𓈒𓏸 𓂂𓈒 ♡ 𓂂 𓈒𓏸﻿", k:"heart vibe dots"},
     {s:"ॱ˚ʚ♥ɞ˚ॱ", k:"heart brackets"},{s:"𓏲 ࣪₊♡𓂃", k:"heart aesthetic"},{s:"ৎ୭", k:"heart shape"},
@@ -650,14 +658,18 @@ const SYMBOL_DATA = {
     {s:"੭", k:"small hand"},{s:"࿐", k:"sanskrit cloud"},{s:"࿔", k:"flow"},
     {s:"⋆˚", k:"star above"},{s:"｡˚", k:"dot ring"},{s:"⋆ ˚", k:"star fade"},
     {s:"₊˚", k:"plus small"},{s:"⋆｡˚", k:"star dot ring"},{s:"˖", k:"small cross"},
-    {s:"⁺", k:"plus small"},{s:"⊹", k:"sparkle cross"},
+    {s:"⁺", k:"plus small"},
+    {s:"🜸", k:"star alchemy"},{s:"🜚", k:"star alchemy 2"},{s:"✡", k:"star six"},
+    {s:"⯎", k:"star eclipse"},{s:"⯌", k:"star black point"},{s:"✫", k:"star outlined"},
+    {s:"✬", k:"star bold outlined"},{s:"✭", k:"star black outlined"},{s:"✮", k:"star pinwheel"},
+    {s:"⛤", k:"pentagram"},{s:"⛧", k:"pentagram inverse"},
+    {s:"✢", k:"sparkle four"},{s:"✣", k:"sparkle four bold"},{s:"✤", k:"sparkle ball"},
+    {s:"✥", k:"sparkle ball bold"},
+    {s:"✶", k:"star six point"},{s:"✷", k:"star six point bold"},{s:"✸", k:"star eight point"},
+    {s:"✹", k:"star twelve point"},{s:"✺", k:"star sixteen point"},{s:"✻", k:"star teardrop"},
+    {s:"✼", k:"star asterisk open"},{s:"✽", k:"star asterisk bold"},
   ],
   "flowers": [
-    {s:"🌸", k:"cherry blossom"},{s:"🌷", k:"tulip"},{s:"🌹", k:"rose"},
-    {s:"🌺", k:"hibiscus"},{s:"🌻", k:"sunflower"},{s:"🌼", k:"daisy"},
-    {s:"💐", k:"bouquet"},{s:"🪷", k:"lotus"},{s:"🪻", k:"hyacinth"},
-    {s:"🥀", k:"wilted flower"},{s:"🌱", k:"seedling"},{s:"🌿", k:"herb"},
-    {s:"🍀", k:"four leaf clover"},{s:"☘️", k:"shamrock"},{s:"🍃", k:"leaf"},
     {s:"✿", k:"flower"},{s:"❀", k:"flower white"},{s:"❁", k:"flower pale"},
     {s:"❃", k:"flower four"},{s:"❋", k:"flower bold"},{s:"✾", k:"flower"},
     {s:"⚘", k:"flower stem"},{s:"⚜", k:"lily fleur"},{s:"❇", k:"sparkle star"},
@@ -678,7 +690,7 @@ const SYMBOL_DATA = {
   "check": [
     {s:"✓", k:"check"},{s:"✔", k:"check bold"},{s:"✗", k:"x cross"},
     {s:"✘", k:"x bold"},{s:"✕", k:"x thin"},{s:"✖", k:"x heavy"},
-    {s:"❌", k:"x red"},{s:"⭕", k:"circle red"},{s:"☑", k:"checkbox"},
+    {s:"☑", k:"checkbox"},
     {s:"☒", k:"x box"},{s:"⊘", k:"prohibit"},{s:"☐", k:"empty box"},
     {s:"∨", k:"check v"},{s:"ꤶ", k:"check tick"},{s:"√", k:"check root"},
   ],
@@ -689,6 +701,34 @@ const SYMBOL_DATA = {
     {s:"➊", k:"number 1 filled"},{s:"➋", k:"number 2 filled"},{s:"➌", k:"number 3 filled"},
     {s:"➍", k:"number 4 filled"},{s:"➎", k:"number 5 filled"},{s:"➏", k:"number 6 filled"},
     {s:"➐", k:"number 7 filled"},{s:"➑", k:"number 8 filled"},{s:"➒", k:"number 9 filled"},
+    {s:"①", k:"number 1 circle thin"},{s:"②", k:"number 2 circle thin"},{s:"③", k:"number 3 circle thin"},
+    {s:"④", k:"number 4 circle thin"},{s:"⑤", k:"number 5 circle thin"},{s:"⑥", k:"number 6 circle thin"},
+    {s:"⑦", k:"number 7 circle thin"},{s:"⑧", k:"number 8 circle thin"},{s:"⑨", k:"number 9 circle thin"},
+    {s:"⑩", k:"number 10 circle"},{s:"⑪", k:"number 11 circle"},{s:"⑫", k:"number 12 circle"},
+    {s:"⑬", k:"number 13 circle"},{s:"⑭", k:"number 14 circle"},{s:"⑮", k:"number 15 circle"},
+    {s:"⑯", k:"number 16 circle"},{s:"⑰", k:"number 17 circle"},{s:"⑱", k:"number 18 circle"},
+    {s:"⑲", k:"number 19 circle"},{s:"⑳", k:"number 20 circle"},
+    {s:"⑴", k:"number 1 paren"},{s:"⑵", k:"number 2 paren"},{s:"⑶", k:"number 3 paren"},
+    {s:"⑷", k:"number 4 paren"},{s:"⑸", k:"number 5 paren"},{s:"⑹", k:"number 6 paren"},
+    {s:"⑺", k:"number 7 paren"},{s:"⑻", k:"number 8 paren"},{s:"⑼", k:"number 9 paren"},
+    {s:"⑽", k:"number 10 paren"},
+    {s:"⒈", k:"number 1 period"},{s:"⒉", k:"number 2 period"},{s:"⒊", k:"number 3 period"},
+    {s:"⒋", k:"number 4 period"},{s:"⒌", k:"number 5 period"},{s:"⒍", k:"number 6 period"},
+    {s:"⒎", k:"number 7 period"},{s:"⒏", k:"number 8 period"},{s:"⒐", k:"number 9 period"},
+    {s:"⒑", k:"number 10 period"},
+    {s:"Ⅰ", k:"roman 1"},{s:"Ⅱ", k:"roman 2"},{s:"Ⅲ", k:"roman 3"},{s:"Ⅳ", k:"roman 4"},
+    {s:"Ⅴ", k:"roman 5"},{s:"Ⅵ", k:"roman 6"},{s:"Ⅶ", k:"roman 7"},{s:"Ⅷ", k:"roman 8"},
+    {s:"Ⅸ", k:"roman 9"},{s:"Ⅹ", k:"roman 10"},{s:"Ⅺ", k:"roman 11"},{s:"Ⅻ", k:"roman 12"},
+    {s:"ⅰ", k:"roman lower 1"},{s:"ⅱ", k:"roman lower 2"},{s:"ⅲ", k:"roman lower 3"},
+    {s:"ⅳ", k:"roman lower 4"},{s:"ⅴ", k:"roman lower 5"},{s:"ⅵ", k:"roman lower 6"},
+    {s:"ⅶ", k:"roman lower 7"},{s:"ⅷ", k:"roman lower 8"},{s:"ⅸ", k:"roman lower 9"},
+    {s:"ⅹ", k:"roman lower 10"},
+    {s:"⁰", k:"super 0"},{s:"¹", k:"super 1"},{s:"²", k:"super 2"},{s:"³", k:"super 3"},
+    {s:"⁴", k:"super 4"},{s:"⁵", k:"super 5"},{s:"⁶", k:"super 6"},{s:"⁷", k:"super 7"},
+    {s:"⁸", k:"super 8"},{s:"⁹", k:"super 9"},
+    {s:"₀", k:"sub 0"},{s:"₁", k:"sub 1"},{s:"₂", k:"sub 2"},{s:"₃", k:"sub 3"},
+    {s:"₄", k:"sub 4"},{s:"₅", k:"sub 5"},{s:"₆", k:"sub 6"},{s:"₇", k:"sub 7"},
+    {s:"₈", k:"sub 8"},{s:"₉", k:"sub 9"},
   ],
   "music": [
     {s:"♪", k:"note"},{s:"♫", k:"note double"},{s:"♬", k:"note beam"},
@@ -714,6 +754,7 @@ const SYMBOL_DATA = {
     {s:"◒", k:"half bottom"},{s:"◓", k:"half top"},
   ],
   "special": [
+    {s:"☻", k:"smiley solid"},{s:"✈", k:"airplane"},{s:"✎", k:"pencil"},
     {s:"※", k:"reference"},{s:"§", k:"section"},{s:"¶", k:"paragraph"},
     {s:"†", k:"dagger"},{s:"‡", k:"double dagger"},{s:"⁂", k:"three stars"},
     {s:"⁕", k:"flower asterisk"},{s:"⁎", k:"asterisk heavy"},{s:"⁑", k:"two asterisks"},
@@ -1063,9 +1104,10 @@ const pageState = {};
 
 const CATEGORIES = [
   "favorites", "recent", "fonts",
-  "combos ✿", "cute", "long decor", "profile",
-  "hearts", "stars", "flowers", "arrows",
-  "check", "numbers", "music", "moon/sky", "shapes", "special"
+  "combos ✿",
+  "hearts", "flowers", "stars", "check",
+  "long decor", "profile", "cute",
+  "arrows", "numbers", "music", "moon/sky", "shapes", "special"
 ];
 
 const LIST_TABS = new Set(["combos ✿", "cute", "long decor", "profile"]);
