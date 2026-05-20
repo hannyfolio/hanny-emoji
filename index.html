@@ -594,6 +594,15 @@ const SYMBOL_DATA = {
     {s:"♥︎", k:"heart"},{s:"❦", k:"heart floral"},
     {s:"❧", k:"heart leaf"},{s:"෴", k:"heart line"},{s:"💌", k:"love letter"},
     {s:"୨୧", k:"heart brackets"},{s:"♡‧₊˚", k:"heart sparkle"},{s:"˚୨୧⋆", k:"heart star"},
+    {s:"︠♡", k:"heart subtle"},{s:"˚ෆ*", k:"heart sparkle 2"},{s:"₊ 𓈒𓏸 𓂂𓈒 ♡ 𓂂 𓈒𓏸﻿", k:"heart vibe dots"},
+    {s:"ॱ˚ʚ♥ɞ˚ॱ", k:"heart brackets"},{s:"𓏲 ࣪₊♡𓂃", k:"heart aesthetic"},{s:"ৎ୭", k:"heart shape"},
+    {s:"ꯁꯧ", k:"heart small"},{s:"చీ", k:"heart eyes"},{s:"ᢉ𐭩", k:"heart tiny"},
+    {s:"↬❥", k:"heart arrow tail"},{s:"𑣲", k:"heart mini"},{s:"৻ꪆ", k:"heart round"},
+    {s:"•◦❥◦•", k:"heart dotted"},{s:"⸜ෆ⸝‍", k:"heart side brackets"},{s:"ઇ♥ଓ", k:"heart brackets 2"},
+    {s:"♡ᩚ", k:"heart shadow"},{s:"ᰔᩚ", k:"heart shadow 2"},{s:"ఌ", k:"heart small 2"},
+    {s:"♡̄̈", k:"heart dot"},{s:"ᰃ", k:"heart tiny 2"},{s:"°ε♡з°", k:"heart lips"},
+    {s:"൬", k:"heart mini 2"},{s:"ဣ", k:"heart bracket"},{s:"ᰔ", k:"heart tiny 3"},
+    {s:"ʚ", k:"heart half"},
   ],
   "stars": [
     {s:"✦", k:"star diamond"},{s:"✧", k:"star white"},{s:"⋆", k:"star small"},
@@ -635,6 +644,15 @@ const SYMBOL_DATA = {
     {s:"✘", k:"x bold"},{s:"✕", k:"x thin"},{s:"✖", k:"x heavy"},
     {s:"❌", k:"x red"},{s:"⭕", k:"circle red"},{s:"☑", k:"checkbox"},
     {s:"☒", k:"x box"},{s:"⊘", k:"prohibit"},{s:"☐", k:"empty box"},
+    {s:"∨", k:"check v"},{s:"ꤶ", k:"check tick"},{s:"√", k:"check root"},
+  ],
+  "numbers": [
+    {s:"➀", k:"number 1 circle"},{s:"➁", k:"number 2 circle"},{s:"➂", k:"number 3 circle"},
+    {s:"➃", k:"number 4 circle"},{s:"➄", k:"number 5 circle"},{s:"➅", k:"number 6 circle"},
+    {s:"➆", k:"number 7 circle"},{s:"➇", k:"number 8 circle"},{s:"➈", k:"number 9 circle"},
+    {s:"➊", k:"number 1 filled"},{s:"➋", k:"number 2 filled"},{s:"➌", k:"number 3 filled"},
+    {s:"➍", k:"number 4 filled"},{s:"➎", k:"number 5 filled"},{s:"➏", k:"number 6 filled"},
+    {s:"➐", k:"number 7 filled"},{s:"➑", k:"number 8 filled"},{s:"➒", k:"number 9 filled"},
   ],
   "music": [
     {s:"♪", k:"note"},{s:"♫", k:"note double"},{s:"♬", k:"note beam"},
@@ -642,6 +660,7 @@ const SYMBOL_DATA = {
     {s:"♯", k:"sharp"},{s:"𝄞", k:"treble clef"},{s:"𝄢", k:"bass clef"},
   ],
   "moon/sky": [
+    {s:"✠", k:"cross moon"},
     {s:"☾", k:"crescent left"},{s:"☽", k:"crescent right"},{s:"☼", k:"sun"},
     {s:"☀", k:"sun bold"},{s:"☁", k:"cloud"},{s:"☂", k:"umbrella"},
     {s:"☃", k:"snowman"},{s:"❄", k:"snowflake"},{s:"❅", k:"snow small"},
@@ -882,7 +901,7 @@ const STORAGE_KEYS = { recent: "ep_recent_v2", fav: "ep_fav_v2", fontText: "ep_f
 const THEMES = {
   kitty: {
     name: "kitty room",
-    bg: "./assets/background.jpg",
+    bg: "./assets/kitty.jpg",
     overlay: "linear-gradient(180deg, rgba(255,196,220,0.4) 0%, rgba(255,175,208,0.5) 100%)",
     palette: {
       '--magenta': '#e64a99', '--magenta-dark': '#b03377', '--magenta-deep': '#7a1f50',
@@ -890,6 +909,18 @@ const THEMES = {
       '--frame': '#ff85b5', '--frame-dark': '#e8689a', '--frame-deep': '#b94170',
       '--ink': '#5d2a4a', '--ink-soft': '#8b4a73', '--muted': '#c789a8',
       '--paper': '#fff8fc', '--screen': '#fef0f7', '--bg-soft': '#ffd9e8',
+    },
+  },
+  disney: {
+    name: "disney",
+    bg: "./assets/disney.jpg",
+    overlay: "linear-gradient(180deg, rgba(200,210,240,0.35) 0%, rgba(220,200,235,0.45) 100%)",
+    palette: {
+      '--magenta': '#8c7ac8', '--magenta-dark': '#6b59a8', '--magenta-deep': '#3f306e',
+      '--key': '#faf6ff', '--key-edge': '#cdbfe8', '--key-shadow': '#9c8cc6',
+      '--frame': '#b3a4dc', '--frame-dark': '#8c7ac0', '--frame-deep': '#4a3982',
+      '--ink': '#2e2356', '--ink-soft': '#5a4a8a', '--muted': '#9a90bc',
+      '--paper': '#fbf9ff', '--screen': '#efeaf8', '--bg-soft': '#dcd4f2',
     },
   },
   milkshake: {
@@ -955,19 +986,6 @@ const THEMES = {
       '--paper': '#fafcfe', '--screen': '#eef3f7', '--bg-soft': '#e6edf2',
     },
   },
-  soft: {
-    name: "soft",
-    bg: "./assets/soft.jpg",
-    overlay: "linear-gradient(180deg, rgba(232,224,212,0.3) 0%, rgba(220,210,196,0.4) 100%)",
-    palette: {
-      '--bg': '#e8e0d4',
-      '--magenta': '#c89478', '--magenta-dark': '#a47254', '--magenta-deep': '#6a4a30',
-      '--key': '#fffaf2', '--key-edge': '#d8cab4', '--key-shadow': '#b09870',
-      '--frame': '#d8c0a0', '--frame-dark': '#b89878', '--frame-deep': '#785840',
-      '--ink': '#4a3a2c', '--ink-soft': '#7a6a54', '--muted': '#a0907c',
-      '--paper': '#fffbf2', '--screen': '#f6eedb', '--bg-soft': '#f4ecdf',
-    },
-  },
   cloud: {
     name: "cloud",
     bg: "./assets/cloud.jpg",
@@ -981,37 +999,14 @@ const THEMES = {
       '--paper': '#ffffff', '--screen': '#f4f6fa', '--bg-soft': '#f8f9fc',
     },
   },
-  sunset: {
-    name: "sunset",
-    bg: "./assets/sunset.jpg",
-    overlay: "linear-gradient(180deg, rgba(240,213,216,0.25) 0%, rgba(228,196,210,0.35) 100%)",
-    palette: {
-      '--bg': '#f0d5d8',
-      '--magenta': '#e8a8b8', '--magenta-dark': '#c47888', '--magenta-deep': '#884c5c',
-      '--key': '#fff8f8', '--key-edge': '#f0c0c8', '--key-shadow': '#c895a0',
-      '--frame': '#ecb0bc', '--frame-dark': '#d088a0', '--frame-deep': '#885668',
-      '--ink': '#4a3038', '--ink-soft': '#8a6068', '--muted': '#b89098',
-      '--paper': '#fffafc', '--screen': '#fce8ec', '--bg-soft': '#f8e4e6',
-    },
-  },
-  bubble: {
-    name: "bubble",
-    bg: "./assets/bubble.jpg",
-    overlay: "linear-gradient(180deg, rgba(212,208,200,0.3) 0%, rgba(196,192,184,0.4) 100%)",
-    palette: {
-      '--bg': '#d4d0c8',
-      '--magenta': '#9a8a78', '--magenta-dark': '#786a58', '--magenta-deep': '#4a4030',
-      '--key': '#faf8f4', '--key-edge': '#c0bcb0', '--key-shadow': '#8a8474',
-      '--frame': '#b8b0a0', '--frame-dark': '#98907c', '--frame-deep': '#585040',
-      '--ink': '#3a342c', '--ink-soft': '#6a6450', '--muted': '#98907c',
-      '--paper': '#fcfaf4', '--screen': '#f0ece2', '--bg-soft': '#e8e4dc',
-    },
-  },
 };
 let activeTheme = localStorage.getItem(STORAGE_KEYS.theme) || "kitty";
 if (activeTheme === 'y2k') activeTheme = 'playtime'; // migrate old key
 if (activeTheme === 'light') activeTheme = 'cloud';  // migrate removed light → cloud
 if (activeTheme === 'dark') activeTheme = 'night';   // migrate removed dark → night
+if (activeTheme === 'soft') activeTheme = 'milkshake';
+if (activeTheme === 'sunset') activeTheme = 'pink';
+if (activeTheme === 'bubble') activeTheme = 'cloud';
 if (!THEMES[activeTheme]) activeTheme = "kitty";
 
 function applyTheme(themeId) {
@@ -1032,7 +1027,7 @@ const CATEGORIES = [
   "favorites", "recent", "fonts",
   "combos ✿", "cute", "long decor", "profile",
   "hearts", "stars", "flowers", "arrows",
-  "check", "music", "moon/sky", "shapes", "special"
+  "check", "numbers", "music", "moon/sky", "shapes", "special"
 ];
 
 const LIST_TABS = new Set(["combos ✿", "cute", "long decor", "profile"]);
