@@ -66,35 +66,35 @@
     z-index: -1;
   }
 
-  /* ===== THEME FAB ===== */
-  .theme-fab {
+  /* ===== Top FAB row ===== */
+  .top-fabs {
     position: fixed;
     top: max(12px, env(safe-area-inset-top));
     right: max(12px, env(safe-area-inset-right));
-    width: 32px; height: 32px;
+    display: flex; gap: 8px;
+    z-index: 20;
+  }
+  .fab {
+    width: 36px; height: 36px;
     padding: 0;
     display: inline-flex; align-items: center; justify-content: center;
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.78);
     color: var(--ink);
-    border: 1.5px solid var(--key-edge);
-    border-bottom: 3px solid var(--key-shadow);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border-radius: 999px;
     font-size: 16px;
     line-height: 1;
     cursor: pointer;
-    z-index: 20;
-    transition: transform 0.05s ease, border-bottom-width 0.05s ease, background 0.15s ease;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
-  .theme-fab:active {
-    transform: translateY(2px);
-    border-bottom-width: 1.5px;
-  }
-  .theme-fab.active {
+  .fab:active { transform: scale(0.94); }
+  .fab.active {
     background: var(--magenta);
-    border-color: var(--magenta-dark);
-    border-bottom-color: var(--magenta-deep);
+    color: white;
+    border-color: var(--magenta);
   }
 
   /* ===== DRAWER : tabs / theme ===== */
@@ -112,14 +112,13 @@
     position: fixed;
     top: 0; left: 0; right: 0;
     z-index: 60;
-    background: linear-gradient(180deg, var(--bg-soft) 0%, var(--bg) 100%);
-    border-bottom: 4px solid var(--frame-deep);
+    background: var(--paper);
     border-bottom-left-radius: 24px;
     border-bottom-right-radius: 24px;
     padding: 14px 16px 20px;
     transform: translateY(-110%);
     transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
-    box-shadow: 0 8px 24px rgba(185, 65, 112, 0.25);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     max-height: 85vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -156,25 +155,22 @@
     letter-spacing: 0.3px;
     cursor: pointer; user-select: none;
     border: 1.5px solid var(--key-edge);
-    border-bottom: 4px solid var(--key-shadow);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
     border-radius: 14px;
     white-space: nowrap;
     text-transform: lowercase;
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
   }
   .tab:active {
-    transform: translateY(2px);
-    border-bottom-width: 2px;
+    transform: scale(0.96);
   }
   .tab.active {
     background: var(--magenta);
     color: white;
     border-color: var(--magenta-dark);
-    border-bottom-color: var(--magenta-deep);
-    text-shadow: 0 1px 0 rgba(0,0,0,0.18);
   }
 
   /* ===== Theme picker ===== */
@@ -188,7 +184,7 @@
     padding: 8px;
     background: var(--key);
     border: 1.5px solid var(--key-edge);
-    border-bottom: 4px solid var(--key-shadow);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
     border-radius: 16px;
     cursor: pointer;
     font-family: inherit;
@@ -197,18 +193,15 @@
     color: var(--ink);
     text-transform: lowercase;
     letter-spacing: 0.5px;
-    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
   }
   .theme-card:active {
-    transform: translateY(2px);
-    border-bottom-width: 2px;
+    transform: scale(0.96);
   }
   .theme-card.active {
     background: var(--magenta);
     color: white;
     border-color: var(--magenta-dark);
-    border-bottom-color: var(--magenta-deep);
-    text-shadow: 0 1px 0 rgba(0,0,0,0.18);
   }
   .theme-thumb {
     width: 100%;
@@ -219,7 +212,7 @@
     border: 1.5px solid rgba(0,0,0,0.05);
   }
 
-  main { flex: 1; padding: 50px 14px 24px; padding-top: max(50px, env(safe-area-inset-top)); position: relative; z-index: 1; }
+  main { flex: 1; padding: 60px 14px 24px; padding-top: calc(max(12px, env(safe-area-inset-top)) + 48px); position: relative; z-index: 1; }
   @media (min-width: 768px) {
     main { max-width: 760px; margin: 0 auto; }
   }
@@ -236,10 +229,10 @@
     font-size: 22px;
     background: var(--key);
     border: 1.5px solid var(--key-edge);
-    border-bottom: 4px solid var(--key-shadow);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
     border-radius: 14px;
     cursor: pointer;
-    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
     position: relative;
     color: var(--ink);
     line-height: 1;
@@ -250,8 +243,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", "Noto Sans KR", sans-serif;
   }
   .sym-btn:active {
-    transform: translateY(3px);
-    border-bottom-width: 1px;
+    transform: scale(0.95);
     background: var(--magenta);
     color: white;
     border-color: var(--magenta-dark);
@@ -269,12 +261,12 @@
     padding: 14px 16px;
     background: var(--key);
     border: 1.5px solid var(--key-edge);
-    border-bottom: 4px solid var(--key-shadow);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
     border-radius: 16px;
     font-size: 16px;
     cursor: pointer;
     text-align: center;
-    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
     position: relative;
     color: var(--ink);
     word-break: break-all;
@@ -282,8 +274,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", "Noto Sans KR", sans-serif;
   }
   .combo-btn:active {
-    transform: translateY(3px);
-    border-bottom-width: 1px;
+    transform: scale(0.95);
     background: var(--magenta);
     color: white;
     border-color: var(--magenta-dark);
@@ -304,16 +295,15 @@
     display: flex; align-items: center; justify-content: center;
     background: var(--key);
     border: 1.5px solid var(--key-edge);
-    border-bottom: 3px solid var(--key-shadow);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
     border-radius: 12px;
     color: var(--ink);
     font-size: 20px; font-weight: 700;
     cursor: pointer; user-select: none;
-    transition: transform 0.05s ease, border-bottom-width 0.05s ease, opacity 0.15s ease;
+    transition: transform 0.1s ease, opacity 0.15s ease, background 0.15s ease;
   }
   .pager-btn:not(:disabled):active {
-    transform: translateY(2px);
-    border-bottom-width: 1px;
+    transform: scale(0.96);
     background: var(--magenta);
     color: white;
     border-color: var(--magenta-dark);
@@ -335,7 +325,7 @@
     width: 100%;
     padding: 14px 16px;
     border: 2px solid var(--key-edge);
-    border-bottom: 4px solid var(--key-shadow);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
     border-radius: 16px;
     outline: none;
     background: var(--paper);
@@ -344,26 +334,25 @@
     font-weight: 600;
     font-size: 15px;
   }
-  #font-input:focus { border-color: var(--magenta); border-bottom-color: var(--magenta-dark); }
+  #font-input:focus { border-color: var(--magenta); }
   #font-input::placeholder { color: var(--muted); font-weight: 500; }
   .font-row {
     padding: 14px 16px;
     background: var(--key);
     border: 1.5px solid var(--key-edge);
-    border-bottom: 4px solid var(--key-shadow);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
     border-radius: 16px;
     cursor: pointer;
     position: relative;
     color: var(--ink);
     word-break: break-all;
     line-height: 1.6;
-    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
     width: 100%;
     text-align: left;
   }
   .font-row:active {
-    transform: translateY(3px);
-    border-bottom-width: 1px;
+    transform: scale(0.95);
     background: var(--magenta);
     color: white;
     border-color: var(--magenta-dark);
@@ -393,12 +382,10 @@
     display: flex; flex-direction: column; gap: 12px;
   }
   .pad-screen {
-    padding: 10px;
-    background: linear-gradient(180deg, var(--frame) 0%, var(--frame-dark) 100%);
+    padding: 8px;
+    background: var(--frame);
     border-radius: 20px;
-    border: 2px solid var(--frame-deep);
-    border-bottom-width: 5px;
-    box-shadow: inset 0 2px 0 rgba(255,255,255,0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   }
   #pad-input {
     display: block;
@@ -406,8 +393,8 @@
     min-height: 160px;
     padding: 16px 18px;
     background: var(--screen);
-    border: 2px solid var(--frame-deep);
-    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-radius: 14px;
     font-family: inherit;
     font-weight: 600;
     font-size: 17px;
@@ -415,11 +402,10 @@
     color: var(--ink);
     resize: vertical;
     outline: none;
-    box-shadow: inset 0 2px 4px rgba(185, 65, 112, 0.15);
   }
   #pad-input:focus {
-    border-color: var(--magenta-dark);
     background: var(--paper);
+    border-color: var(--magenta);
   }
   #pad-input::placeholder { color: var(--muted); font-weight: 500; }
   .pad-actions {
@@ -432,7 +418,7 @@
     padding: 9px 26px;
     background: var(--key);
     border: 1.5px solid var(--key-edge);
-    border-bottom: 4px solid var(--key-shadow);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
     border-radius: 12px;       /* rectangular — different from the pill tabs */
     font-family: inherit;
     font-size: 12px;
@@ -441,18 +427,15 @@
     cursor: pointer;
     text-transform: uppercase;  /* uppercase makes them feel like distinct action keys */
     letter-spacing: 1.5px;
-    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
   }
   .pad-btn:active {
-    transform: translateY(2px);
-    border-bottom-width: 2px;
+    transform: scale(0.96);
   }
   .pad-btn.primary {
     background: var(--magenta);
     color: white;
-    border-color: var(--magenta-dark);
-    border-bottom-color: var(--magenta-deep);
-    text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+    border-color: var(--magenta);
   }
 
   /* ===== PAD divider (between actions and tabs) ===== */
@@ -495,19 +478,18 @@
     padding: 7px 12px;
     background: var(--key);
     border: 1.5px solid var(--key-edge);
-    border-bottom: 3px solid var(--key-shadow);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
     border-radius: 999px;
     font-size: 14px;
     cursor: pointer;
     color: var(--ink);
-    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
     font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", "Noto Sans KR", sans-serif;
     max-width: 100%;
     word-break: break-all;
   }
   .quick-chip:active {
-    transform: translateY(2px);
-    border-bottom-width: 1px;
+    transform: scale(0.96);
     background: var(--magenta);
     color: white;
     border-color: var(--magenta-dark);
@@ -529,15 +511,14 @@
     background: var(--magenta);
     color: white;
     padding: 10px 22px;
-    border: 1.5px solid var(--magenta-dark);
-    border-bottom: 4px solid var(--magenta-deep);
+    border: none;
     border-radius: 999px;
     font-family: inherit;
-    font-weight: 800;
+    font-weight: 700;
     font-size: 13px;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
     text-transform: lowercase;
-    text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     opacity: 0; pointer-events: none;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 100;
@@ -589,29 +570,37 @@
     letter-spacing: 0.3px;
     cursor: pointer; user-select: none;
     border: 1.5px solid var(--key-edge);
-    border-bottom: 4px solid var(--key-shadow);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
     border-radius: 999px;
     white-space: nowrap;
     text-transform: lowercase;
     scroll-snap-align: start;
-    transition: transform 0.05s ease, border-bottom-width 0.05s ease;
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
   }
   .ptab:active {
-    transform: translateY(2px);
-    border-bottom-width: 2px;
+    transform: scale(0.96);
   }
   .ptab.active {
     background: var(--magenta);
     color: white;
     border-color: var(--magenta-dark);
-    border-bottom-color: var(--magenta-deep);
-    text-shadow: 0 1px 0 rgba(0,0,0,0.18);
   }
 </style>
 </head>
 <body>
 
-<button class="theme-fab" id="theme-toggle" aria-label="theme picker">🎀</button>
+<div class="top-fabs">
+  <button class="fab" id="share-btn" aria-label="share app">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="18" cy="5" r="3"></circle>
+      <circle cx="6" cy="12" r="3"></circle>
+      <circle cx="18" cy="19" r="3"></circle>
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+    </svg>
+  </button>
+  <button class="fab" id="theme-toggle" aria-label="theme picker">🎀</button>
+</div>
 
 <main id="content"></main>
 
@@ -1480,6 +1469,29 @@ function attachPickerHandlers() {
 document.getElementById('theme-toggle').addEventListener('click', () => {
   if (openedDrawer === 'theme') closeDrawer();
   else openDrawer('theme');
+});
+
+document.getElementById('share-btn').addEventListener('click', async () => {
+  const url = location.origin + location.pathname;
+  const data = {
+    title: 'aesthetic text emoji ♡',
+    text: '감성 텍스트 이모지 키보드 ✿',
+    url,
+  };
+  try {
+    if (navigator.share) {
+      await navigator.share(data);
+      return;
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') return;
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast('link copied ♥');
+  } catch {
+    showToast('share not supported');
+  }
 });
 document.getElementById('drawer-backdrop').addEventListener('click', closeDrawer);
 document.addEventListener('keydown', (e) => {
