@@ -287,6 +287,42 @@
     font-size: 12px; color: var(--magenta);
   }
 
+  /* ===== Pager ===== */
+  .pager {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px;
+    margin-top: 12px; padding: 6px 0 4px;
+  }
+  .pager-btn {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--key);
+    border: 1.5px solid var(--key-edge);
+    border-bottom: 3px solid var(--key-shadow);
+    border-radius: 12px;
+    color: var(--ink);
+    font-size: 20px; font-weight: 700;
+    cursor: pointer; user-select: none;
+    transition: transform 0.05s ease, border-bottom-width 0.05s ease, opacity 0.15s ease;
+  }
+  .pager-btn:not(:disabled):active {
+    transform: translateY(2px);
+    border-bottom-width: 1px;
+    background: var(--magenta);
+    color: white;
+    border-color: var(--magenta-dark);
+  }
+  .pager-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .pager-info {
+    font-size: 13px; font-weight: 600;
+    color: var(--ink-soft);
+    min-width: 44px; text-align: center;
+    letter-spacing: 0.3px;
+  }
+
   /* ===== FONT converter ===== */
   .font-input-wrap { margin-bottom: 14px; }
   #font-input {
@@ -1022,6 +1058,8 @@ function applyTheme(themeId) {
 const recent = JSON.parse(localStorage.getItem(STORAGE_KEYS.recent) || "[]");
 const favorites = new Set(JSON.parse(localStorage.getItem(STORAGE_KEYS.fav) || "[]"));
 let activeTab = "combos ✿";
+const PAGE_SIZE = { sym: 24, combo: 8 };
+const pageState = {};
 
 const CATEGORIES = [
   "favorites", "recent", "fonts",
@@ -1130,23 +1168,43 @@ function closeDrawer() {
 /* ============================================
    Picker rendering (within preview)
    ============================================ */
+function paginate(items, size) {
+  const pages = Math.max(1, Math.ceil(items.length / size));
+  let page = pageState[activeTab] || 0;
+  if (page >= pages) page = pages - 1;
+  if (page < 0) page = 0;
+  pageState[activeTab] = page;
+  return { sliced: items.slice(page * size, page * size + size), page, pages };
+}
+
+function pagerHtml(page, pages) {
+  if (pages <= 1) return '';
+  return `<div class="pager">
+    <button class="pager-btn" data-pager="prev" ${page === 0 ? 'disabled' : ''} aria-label="prev">‹</button>
+    <span class="pager-info">${page + 1} / ${pages}</span>
+    <button class="pager-btn" data-pager="next" ${page === pages - 1 ? 'disabled' : ''} aria-label="next">›</button>
+  </div>`;
+}
+
 function renderSymGrid(items) {
   if (!items.length) return emptyMsg();
-  return `<div class="grid">${items.map(it => {
+  const { sliced, page, pages } = paginate(items, PAGE_SIZE.sym);
+  return `<div class="grid">${sliced.map(it => {
     const val = typeof it === 'string' ? it : it.s;
     const k = typeof it === 'string' ? '' : (it.k || '');
     const isFav = favorites.has(val);
     return `<button class="sym-btn ${isFav ? 'fav' : ''}" data-text="${escapeAttr(val)}" title="${escapeAttr(k)}">${escapeHtml(val)}</button>`;
-  }).join('')}</div>`;
+  }).join('')}</div>${pagerHtml(page, pages)}`;
 }
 
 function renderComboList(items) {
   if (!items.length) return emptyMsg();
-  return `<div class="combo-list">${items.map(s => {
+  const { sliced, page, pages } = paginate(items, PAGE_SIZE.combo);
+  return `<div class="combo-list">${sliced.map(s => {
     const val = typeof s === 'string' ? s : s.s;
     const isFav = favorites.has(val);
     return `<button class="combo-btn ${isFav ? 'fav' : ''}" data-text="${escapeAttr(val)}">${escapeHtml(val)}</button>`;
-  }).join('')}</div>`;
+  }).join('')}</div>${pagerHtml(page, pages)}`;
 }
 
 function renderFontRows() {
@@ -1257,6 +1315,7 @@ function attachPreviewHandlers() {
   document.querySelectorAll('#preview-tabs .ptab').forEach(btn => {
     btn.addEventListener('click', () => {
       activeTab = btn.dataset.tab;
+      pageState[activeTab] = 0;
       document.querySelectorAll('#preview-tabs .ptab').forEach(b => b.classList.toggle('active', b === btn));
       refreshPicker();
       // Scroll active tab into view
@@ -1288,6 +1347,18 @@ function attachPreviewHandlers() {
 }
 
 function attachPickerHandlers() {
+  // Pager: prev/next page within the current category
+  document.querySelectorAll('#quick-picker .pager-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      const dir = btn.dataset.pager;
+      pageState[activeTab] = (pageState[activeTab] || 0) + (dir === 'next' ? 1 : -1);
+      refreshPicker();
+      const picker = document.getElementById('quick-picker');
+      if (picker) picker.scrollTop = 0;
+    });
+  });
+
   // Font rows: tap = replace textarea content with styled version
   document.querySelectorAll('#quick-picker .font-row').forEach(btn => {
     btn.addEventListener('click', () => {
