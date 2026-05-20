@@ -11,6 +11,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="emoji">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&display=swap">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   :root {
@@ -96,6 +99,72 @@
     color: white;
     border-color: var(--magenta);
   }
+
+  /* ===== Share modal ===== */
+  .share-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 70;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .share-backdrop.show { opacity: 1; }
+  .share-modal {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 80;
+    background: var(--paper);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    padding: 14px 16px calc(20px + env(safe-area-inset-bottom));
+    transform: translateY(110%);
+    transition: transform 0.25s cubic-bezier(0.34, 1.3, 0.64, 1);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.1);
+  }
+  .share-modal.show { transform: translateY(0); }
+  .share-handle {
+    width: 44px; height: 5px;
+    background: var(--key-edge);
+    border-radius: 3px;
+    margin: 0 auto 14px;
+  }
+  .share-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--ink-soft);
+    text-transform: lowercase;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .share-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .share-opt {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px;
+    padding: 14px 6px;
+    background: var(--key);
+    color: var(--ink);
+    border: 1px solid var(--key-edge);
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: lowercase;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: transform 0.1s ease, background 0.15s ease;
+  }
+  .share-opt:active { transform: scale(0.95); }
+  .share-opt .icon { font-size: 22px; line-height: 1; }
+  .share-opt.kakao { background: #fee500; color: #3b1e1e; border-color: #f7d800; }
 
   /* ===== DRAWER : tabs / theme ===== */
   .drawer-backdrop {
@@ -212,7 +281,7 @@
     border: 1.5px solid rgba(0,0,0,0.05);
   }
 
-  main { flex: 1; padding: 60px 14px 24px; padding-top: calc(max(12px, env(safe-area-inset-top)) + 48px); position: relative; z-index: 1; }
+  main { flex: 1; padding: 60px 14px 24px; padding-top: calc(max(12px, env(safe-area-inset-top)) + 72px); position: relative; z-index: 1; }
   @media (min-width: 768px) {
     main { max-width: 760px; margin: 0 auto; }
   }
@@ -379,39 +448,56 @@
 
   /* ===== PAD : tamagotchi screen ===== */
   .pad-wrap {
-    display: flex; flex-direction: column; gap: 12px;
+    display: flex; flex-direction: column;
   }
   .pad-screen {
-    padding: 8px;
+    position: relative;
+    padding: 18px 10px 10px;
     background: var(--frame);
     border-radius: 20px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+  /* spiral binding dots on top edge */
+  .pad-screen::before {
+    content: "";
+    position: absolute;
+    top: 6px; left: 14px; right: 14px;
+    height: 6px;
+    background-image: radial-gradient(circle, rgba(0,0,0,0.18) 38%, transparent 42%);
+    background-size: 18px 6px;
+    background-repeat: repeat-x;
+    background-position: 0 center;
+    opacity: 0.6;
   }
   #pad-input {
     display: block;
     width: 100%;
-    min-height: 160px;
-    padding: 16px 18px;
-    background: var(--screen);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    min-height: 168px;
+    padding: 14px 18px 14px 52px;
+    background-color: #fffaf3;
+    background-image:
+      linear-gradient(to right, transparent 40px, rgba(231, 130, 156, 0.38) 40px, rgba(231, 130, 156, 0.38) 41px, transparent 41px),
+      repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(140, 175, 210, 0.32) 28px);
+    background-attachment: local;
+    border: 1px solid rgba(0, 0, 0, 0.05);
     border-radius: 14px;
-    font-family: inherit;
-    font-weight: 600;
-    font-size: 17px;
+    font-family: "Caveat", "Patrick Hand", "Apple SD Gothic Neo", -apple-system, sans-serif;
+    font-weight: 500;
+    font-size: 18px;
     line-height: 28px;
-    color: var(--ink);
+    color: #4a3540;
     resize: vertical;
     outline: none;
   }
   #pad-input:focus {
-    background: var(--paper);
-    border-color: var(--magenta);
+    background-color: #fffefb;
+    border-color: rgba(231, 130, 156, 0.5);
   }
-  #pad-input::placeholder { color: var(--muted); font-weight: 500; }
+  #pad-input::placeholder { color: rgba(74, 53, 64, 0.35); font-weight: 500; font-style: italic; }
   .pad-actions {
-    display: flex; gap: 10px;
+    display: flex; gap: 12px;
     justify-content: center;
-    margin-top: 2px;
+    margin-top: 22px;
   }
   .pad-btn {
     flex: 0 0 auto;
@@ -610,6 +696,30 @@
   <div class="drawer-handle"></div>
   <div class="drawer-title">theme</div>
   <div class="theme-grid" id="theme-grid"></div>
+</aside>
+
+<div class="share-backdrop" id="share-backdrop" hidden></div>
+<aside class="share-modal" id="share-modal" hidden>
+  <div class="share-handle"></div>
+  <div class="share-title">share</div>
+  <div class="share-options">
+    <button class="share-opt kakao" data-share="kakao">
+      <span class="icon">💛</span>
+      <span>kakao</span>
+    </button>
+    <button class="share-opt" data-share="sms">
+      <span class="icon">💬</span>
+      <span>message</span>
+    </button>
+    <button class="share-opt" data-share="email">
+      <span class="icon">✉️</span>
+      <span>email</span>
+    </button>
+    <button class="share-opt" data-share="copy">
+      <span class="icon">🔗</span>
+      <span>copy link</span>
+    </button>
+  </div>
 </aside>
 
 <div class="toast" id="toast">copied</div>
@@ -1473,31 +1583,93 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
   else openDrawer('theme');
 });
 
-document.getElementById('share-btn').addEventListener('click', async () => {
-  const url = location.origin + location.pathname;
-  const data = {
-    title: 'aesthetic text emoji ♡',
-    text: '감성 텍스트 이모지 키보드 ✿',
-    url,
-  };
+const SHARE_URL = location.origin + location.pathname;
+const SHARE_TEXT = '감성 텍스트 이모지 키보드 ✿ — aesthetic text emoji';
+
+function openShareModal() {
+  const backdrop = document.getElementById('share-backdrop');
+  const modal = document.getElementById('share-modal');
+  backdrop.hidden = false;
+  modal.hidden = false;
+  requestAnimationFrame(() => {
+    backdrop.classList.add('show');
+    modal.classList.add('show');
+  });
+}
+function closeShareModal() {
+  const backdrop = document.getElementById('share-backdrop');
+  const modal = document.getElementById('share-modal');
+  backdrop.classList.remove('show');
+  modal.classList.remove('show');
+  setTimeout(() => { backdrop.hidden = true; modal.hidden = true; }, 250);
+}
+
+async function tryNativeShare() {
+  if (!navigator.share) return false;
   try {
-    if (navigator.share) {
-      await navigator.share(data);
-      return;
-    }
+    await navigator.share({
+      title: 'aesthetic text emoji ♡',
+      text: SHARE_TEXT,
+      url: SHARE_URL,
+    });
+    return true;
   } catch (e) {
-    if (e && e.name === 'AbortError') return;
+    if (e && e.name === 'AbortError') return true;
+    return false;
   }
-  try {
-    await navigator.clipboard.writeText(url);
-    showToast('link copied ♥');
-  } catch {
-    showToast('share not supported');
+}
+
+document.getElementById('share-btn').addEventListener('click', async () => {
+  // 모바일 기본 공유 시트가 카카오톡/문자 등을 포함하므로 우선 시도
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile && navigator.share) {
+    const ok = await tryNativeShare();
+    if (ok) return;
   }
+  openShareModal();
+});
+
+document.getElementById('share-backdrop').addEventListener('click', closeShareModal);
+
+document.querySelectorAll('#share-modal .share-opt').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const action = btn.dataset.share;
+    const text = encodeURIComponent(`${SHARE_TEXT}\n${SHARE_URL}`);
+    const subject = encodeURIComponent('aesthetic text emoji ♡');
+    const body = encodeURIComponent(`${SHARE_TEXT}\n\n${SHARE_URL}`);
+    if (action === 'kakao') {
+      // KakaoTalk 공식 공유 SDK가 없을 때의 우회: 모바일에선 카카오톡 앱을 통한 텍스트 공유가 native sheet에서 가능
+      // 여기서는 링크를 복사해주고 카카오톡을 띄움
+      try { await navigator.clipboard.writeText(SHARE_URL); } catch {}
+      // iOS/Android에서 카카오톡 앱이 설치돼 있으면 실행 시도
+      window.location.href = 'kakaotalk://';
+      showToast('link copied — paste in kakaotalk');
+      closeShareModal();
+    } else if (action === 'sms') {
+      // iOS는 ?&body, Android는 ?body — 둘 다 호환
+      const sep = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?';
+      window.location.href = `sms:${sep}body=${text}`;
+      closeShareModal();
+    } else if (action === 'email') {
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+      closeShareModal();
+    } else if (action === 'copy') {
+      try {
+        await navigator.clipboard.writeText(SHARE_URL);
+        showToast('link copied ♥');
+      } catch {
+        showToast('copy failed');
+      }
+      closeShareModal();
+    }
+  });
 });
 document.getElementById('drawer-backdrop').addEventListener('click', closeDrawer);
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && openedDrawer) closeDrawer();
+  if (e.key === 'Escape') {
+    if (openedDrawer) closeDrawer();
+    if (!document.getElementById('share-modal').hidden) closeShareModal();
+  }
 });
 
 applyTheme(activeTheme);
