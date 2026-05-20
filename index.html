@@ -1633,27 +1633,39 @@ document.getElementById('share-btn').addEventListener('click', async () => {
 
 document.getElementById('share-backdrop').addEventListener('click', closeShareModal);
 
+// PWA standalone/모바일 브라우저에서 URL scheme이 안정적으로 실행되도록 임시 anchor 클릭으로 처리
+function openExternalScheme(url) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.rel = 'noopener';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => a.remove(), 100);
+}
+
 document.querySelectorAll('#share-modal .share-opt').forEach(btn => {
   btn.addEventListener('click', async () => {
     const action = btn.dataset.share;
-    const text = encodeURIComponent(`${SHARE_TEXT}\n${SHARE_URL}`);
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const fullText = `${SHARE_TEXT}\n${SHARE_URL}`;
+    const text = encodeURIComponent(fullText);
     const subject = encodeURIComponent('aesthetic text emoji ♡');
     const body = encodeURIComponent(`${SHARE_TEXT}\n\n${SHARE_URL}`);
+
     if (action === 'kakao') {
-      // KakaoTalk 공식 공유 SDK가 없을 때의 우회: 모바일에선 카카오톡 앱을 통한 텍스트 공유가 native sheet에서 가능
-      // 여기서는 링크를 복사해주고 카카오톡을 띄움
-      try { await navigator.clipboard.writeText(SHARE_URL); } catch {}
-      // iOS/Android에서 카카오톡 앱이 설치돼 있으면 실행 시도
-      window.location.href = 'kakaotalk://';
-      showToast('link copied — paste in kakaotalk');
+      try { await navigator.clipboard.writeText(fullText); } catch {}
+      showToast('link copied — opening kakaotalk');
       closeShareModal();
+      // 카카오톡 앱 실행 (설치되어 있으면). 메시지 자체는 직전에 클립보드로 복사됨.
+      openExternalScheme('kakaotalk://');
     } else if (action === 'sms') {
-      // iOS는 ?&body, Android는 ?body — 둘 다 호환
-      const sep = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?';
-      window.location.href = `sms:${sep}body=${text}`;
+      // iOS는 sms:&body= (번호 없을 때), Android는 sms:?body=
+      const url = isIOS ? `sms:&body=${text}` : `sms:?body=${text}`;
+      openExternalScheme(url);
       closeShareModal();
     } else if (action === 'email') {
-      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+      openExternalScheme(`mailto:?subject=${subject}&body=${body}`);
       closeShareModal();
     } else if (action === 'copy') {
       try {
